@@ -1,0 +1,11 @@
+.git
+.github
+.claude
+node_modules
+.next
+.env.local
+.env*.local
+README.md
+qrbir_proje_plani.md
+drizzle
+*.log

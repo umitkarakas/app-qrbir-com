@@ -47,7 +47,7 @@ export default function ThemePicker({
       return;
     }
 
-    router.push("/dashboard");
+    router.push(`/projects/${projectId}/edit`);
     router.refresh();
   }
 

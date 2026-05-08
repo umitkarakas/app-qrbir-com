@@ -114,7 +114,11 @@ export default async function DashboardPage() {
             {userProjects.map((project) => (
               <Link
                 key={project.id}
-                href={`/projects/${project.id}/theme`}
+                href={
+                  project.themeName
+                    ? `/projects/${project.id}/edit`
+                    : `/projects/${project.id}/theme`
+                }
                 className="bg-white rounded-xl border border-gray-200 px-5 py-4 flex items-center justify-between hover:shadow-sm hover:border-gray-300 transition-all"
               >
                 <div className="flex-1 min-w-0">

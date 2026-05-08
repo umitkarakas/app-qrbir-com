@@ -12,6 +12,7 @@ import BioLinkForm from "./bio-link-form";
 import GoogleReviewForm from "./google-review-form";
 import BrandBioForm from "./brand-bio-form";
 import EventInvitationForm from "./event-invitation-form";
+import { StudioRequestButton } from "./studio-request-button";
 import { PublishBar } from "./publish-bar";
 import { QrPanel } from "./qr-panel";
 import { SlugEditor } from "./slug-editor";
@@ -149,6 +150,12 @@ export default async function EditPage({
           initialStatus={row.status}
           subdomainType={row.subdomainType}
           slug={row.slug}
+        />
+
+        {/* Studio talebi — yayına geçmeden önce profesyonel hazırlık */}
+        <StudioRequestButton
+          projectId={row.id}
+          currentStatus={row.status}
         />
 
         {/* QR Kod paneli */}

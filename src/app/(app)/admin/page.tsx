@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { projects, themes } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { projects, themes, studioOrders } from "@/db/schema";
+import { eq, desc, inArray } from "drizzle-orm";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -59,22 +59,34 @@ export default async function AdminPage() {
     redirect("/dashboard");
   }
 
-  const allProjects = await db
-    .select({
-      id: projects.id,
-      title: projects.title,
-      slug: projects.slug,
-      projectType: projects.projectType,
-      subdomainType: projects.subdomainType,
-      status: projects.status,
-      userId: projects.userId,
-      createdAt: projects.createdAt,
-      updatedAt: projects.updatedAt,
-      themeName: themes.name,
-    })
-    .from(projects)
-    .leftJoin(themes, eq(projects.themeId, themes.id))
-    .orderBy(desc(projects.createdAt));
+  const [allProjects, pendingStudioOrders] = await Promise.all([
+    db
+      .select({
+        id: projects.id,
+        title: projects.title,
+        slug: projects.slug,
+        projectType: projects.projectType,
+        subdomainType: projects.subdomainType,
+        status: projects.status,
+        userId: projects.userId,
+        createdAt: projects.createdAt,
+        updatedAt: projects.updatedAt,
+        themeName: themes.name,
+      })
+      .from(projects)
+      .leftJoin(themes, eq(projects.themeId, themes.id))
+      .orderBy(desc(projects.createdAt)),
+    db
+      .select({
+        id: studioOrders.id,
+        projectId: studioOrders.projectId,
+        customerNote: studioOrders.customerNote,
+        createdAt: studioOrders.createdAt,
+      })
+      .from(studioOrders)
+      .where(inArray(studioOrders.status, ["pending", "in_progress"]))
+      .orderBy(desc(studioOrders.createdAt)),
+  ]);
 
   const statusCounts = allProjects.reduce<Record<string, number>>((acc, p) => {
     acc[p.status] = (acc[p.status] ?? 0) + 1;
@@ -101,9 +113,46 @@ export default async function AdminPage() {
           </Link>
         </div>
 
+        {/* Studio talepleri — bekleyen */}
+        {pendingStudioOrders.length > 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl px-5 py-4 mb-6">
+            <h2 className="text-sm font-semibold text-blue-800 mb-3 flex items-center gap-2">
+              🎨 Bekleyen Studio Talepleri ({pendingStudioOrders.length})
+            </h2>
+            <div className="space-y-2">
+              {pendingStudioOrders.map((order) => {
+                const proj = allProjects.find((p) => p.id === order.projectId);
+                return (
+                  <div
+                    key={order.id}
+                    className="bg-white rounded-lg border border-blue-100 px-4 py-3 flex items-start justify-between gap-4"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">
+                        {proj?.title ?? `Proje #${order.projectId}`}
+                      </p>
+                      {order.customerNote && (
+                        <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">
+                          &ldquo;{order.customerNote}&rdquo;
+                        </p>
+                      )}
+                    </div>
+                    <div className="shrink-0 text-xs text-gray-400 whitespace-nowrap">
+                      {new Date(order.createdAt).toLocaleDateString("tr-TR", {
+                        day: "numeric",
+                        month: "short",
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Özet istatistikler */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
-          {(["published", "draft", "in_design", "payment_pending"] as const).map(
+          {(["published", "studio_pending", "in_design", "payment_pending"] as const).map(
             (s) => (
               <div
                 key={s}

@@ -157,6 +157,43 @@ export async function sendApprovedEmail({
   });
 }
 
+/** Yeni studio talebi — admin'e bildirim */
+export async function sendStudioRequestEmail({
+  adminEmail,
+  customerName,
+  customerEmail,
+  projectTitle,
+  projectType,
+  note,
+  adminUrl,
+}: {
+  adminEmail: string;
+  customerName: string;
+  customerEmail: string;
+  projectTitle: string;
+  projectType: string;
+  note?: string;
+  adminUrl: string;
+}) {
+  return getResend().emails.send({
+    from: FROM,
+    to: adminEmail,
+    subject: `Yeni Studio Talebi: "${projectTitle}"`,
+    html: baseHtml(`
+      <h1 style="margin:0 0 8px;font-size:22px;color:#111827;">Yeni Studio Talebi 🎨</h1>
+      <p style="margin:0 0 16px;font-size:15px;color:#4b5563;line-height:1.6;">
+        <strong>${customerName}</strong> (${customerEmail}) bir studio talebi oluşturdu.
+      </p>
+      <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:24px;">
+        <tr><td style="padding:8px 0;color:#6b7280;width:120px;">Proje</td><td style="padding:8px 0;color:#111827;font-weight:600;">${projectTitle}</td></tr>
+        <tr><td style="padding:8px 0;color:#6b7280;">Tür</td><td style="padding:8px 0;color:#111827;">${projectType}</td></tr>
+        ${note ? `<tr><td style="padding:8px 0;color:#6b7280;vertical-align:top;">Not</td><td style="padding:8px 0;color:#111827;">${note}</td></tr>` : ""}
+      </table>
+      ${btn("Admin Panelinde İncele", adminUrl, "#2563eb")}
+    `),
+  });
+}
+
 /** Maili sessizce at — hata fırlat */
 export async function trySendMail(
   fn: () => Promise<unknown>,

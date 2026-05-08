@@ -383,6 +383,7 @@ export default async function DashboardPage() {
                   return (
                     <div
                       key={project.id}
+                      className="lum-project-row"
                       style={{
                         display: "flex",
                         alignItems: "center",
@@ -392,15 +393,6 @@ export default async function DashboardPage() {
                         border: "1px solid rgba(255,255,255,0.55)",
                         background: "rgba(255,255,255,0.36)",
                         boxShadow: "inset 0 1px 0 rgba(255,255,255,0.68)",
-                        transition: "transform var(--duration-base) var(--easing-base), box-shadow var(--duration-base)",
-                      }}
-                      onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)";
-                        (e.currentTarget as HTMLElement).style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.68), 0 8px 24px rgba(15,23,42,0.08)";
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLElement).style.transform = "none";
-                        (e.currentTarget as HTMLElement).style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.68)";
                       }}
                     >
                       {/* Icon tile */}

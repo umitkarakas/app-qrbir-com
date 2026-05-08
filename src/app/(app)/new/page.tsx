@@ -82,15 +82,15 @@ export default function NewProjectPage() {
       body: JSON.stringify({ projectType: selected, title }),
     });
 
-    setLoading(false);
-
     if (!res.ok) {
+      setLoading(false);
       const data = await res.json().catch(() => ({}));
       setError(data.error ?? "Proje oluşturulamadı.");
       return;
     }
 
-    router.push("/dashboard");
+    const project = await res.json();
+    router.push(`/projects/${project.id}/theme`);
   }
 
   const selectedProduct = PRODUCT_TYPES.find((p) => p.type === selected);

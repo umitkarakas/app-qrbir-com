@@ -1,0 +1,106 @@
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { projects, themes } from "@/db/schema";
+import { and, eq } from "drizzle-orm";
+import { headers } from "next/headers";
+
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id } = await params;
+  const projectId = parseInt(id, 10);
+  if (Number.isNaN(projectId)) {
+    return NextResponse.json({ error: "Invalid id" }, { status: 400 });
+  }
+
+  const [project] = await db
+    .select()
+    .from(projects)
+    .where(and(eq(projects.id, projectId), eq(projects.userId, session.user.id)))
+    .limit(1);
+
+  if (!project) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  return NextResponse.json(project);
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id } = await params;
+  const projectId = parseInt(id, 10);
+  if (Number.isNaN(projectId)) {
+    return NextResponse.json({ error: "Invalid id" }, { status: 400 });
+  }
+
+  const body = await request.json().catch(() => null);
+  if (!body) {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  // Sahiplik kontrolü
+  const [existing] = await db
+    .select()
+    .from(projects)
+    .where(and(eq(projects.id, projectId), eq(projects.userId, session.user.id)))
+    .limit(1);
+
+  if (!existing) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  const updates: Partial<typeof projects.$inferInsert> = {};
+
+  if (typeof body.themeId === "number") {
+    // Tema'nın varlığını ve project_type uyumunu kontrol et
+    const [theme] = await db
+      .select()
+      .from(themes)
+      .where(eq(themes.id, body.themeId))
+      .limit(1);
+
+    if (!theme) {
+      return NextResponse.json({ error: "Theme not found" }, { status: 400 });
+    }
+    if (theme.productType !== existing.projectType) {
+      return NextResponse.json(
+        { error: "Theme product_type mismatch" },
+        { status: 400 }
+      );
+    }
+    updates.themeId = body.themeId;
+  }
+
+  if (typeof body.title === "string" && body.title.trim().length > 0) {
+    updates.title = body.title.trim();
+  }
+
+  if (Object.keys(updates).length === 0) {
+    return NextResponse.json({ error: "No valid updates" }, { status: 400 });
+  }
+
+  updates.updatedAt = new Date();
+
+  const [updated] = await db
+    .update(projects)
+    .set(updates)
+    .where(eq(projects.id, projectId))
+    .returning();
+
+  return NextResponse.json(updated);
+}

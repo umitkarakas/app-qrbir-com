@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { projects } from "@/db/schema";
+import { projects, themes } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import Link from "next/link";
@@ -60,8 +60,18 @@ export default async function DashboardPage() {
   if (!session) redirect("/login");
 
   const userProjects = await db
-    .select()
+    .select({
+      id: projects.id,
+      title: projects.title,
+      slug: projects.slug,
+      projectType: projects.projectType,
+      subdomainType: projects.subdomainType,
+      status: projects.status,
+      createdAt: projects.createdAt,
+      themeName: themes.name,
+    })
     .from(projects)
+    .leftJoin(themes, eq(projects.themeId, themes.id))
     .where(eq(projects.userId, session.user.id))
     .orderBy(projects.createdAt);
 
@@ -102,9 +112,10 @@ export default async function DashboardPage() {
         ) : (
           <div className="space-y-3">
             {userProjects.map((project) => (
-              <div
+              <Link
                 key={project.id}
-                className="bg-white rounded-xl border border-gray-200 px-5 py-4 flex items-center justify-between hover:shadow-sm transition-shadow"
+                href={`/projects/${project.id}/theme`}
+                className="bg-white rounded-xl border border-gray-200 px-5 py-4 flex items-center justify-between hover:shadow-sm hover:border-gray-300 transition-all"
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
@@ -130,18 +141,29 @@ export default async function DashboardPage() {
                       {SUBDOMAIN_MAP[project.subdomainType] ?? project.subdomainType}/
                       {project.slug}
                     </span>
+                    {project.themeName && (
+                      <>
+                        <span>·</span>
+                        <span>🎨 {project.themeName}</span>
+                      </>
+                    )}
                   </div>
                 </div>
 
-                <div className="ml-4 shrink-0">
-                  <span className="text-xs text-gray-400">
+                <div className="ml-4 shrink-0 text-right">
+                  <div className="text-xs text-gray-400">
                     {new Date(project.createdAt).toLocaleDateString("tr-TR", {
                       day: "numeric",
                       month: "short",
                     })}
-                  </span>
+                  </div>
+                  {!project.themeName && (
+                    <div className="text-xs text-blue-600 mt-1">
+                      Tema seç →
+                    </div>
+                  )}
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}

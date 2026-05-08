@@ -107,12 +107,20 @@ export default async function AdminPage() {
               Toplam {allProjects.length} proje
             </p>
           </div>
-          <Link
-            href="/dashboard"
-            className="text-sm text-gray-500 hover:text-gray-700 px-3 py-2"
-          >
-            ← Panele Dön
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/admin/audit"
+              className="text-sm text-gray-500 hover:text-gray-700 px-3 py-2"
+            >
+              Audit Log
+            </Link>
+            <Link
+              href="/dashboard"
+              className="text-sm text-gray-500 hover:text-gray-700 px-3 py-2"
+            >
+              ← Panele Dön
+            </Link>
+          </div>
         </div>
 
         {/* Studio talepleri — bekleyen */}

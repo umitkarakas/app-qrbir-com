@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { projects, pendingOrders } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { headers } from "next/headers";
+import { audit, getClientIp } from "@/lib/audit";
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "")
   .split(",")
@@ -52,9 +53,14 @@ export async function POST(
       )
     );
 
-  console.log(
-    `[admin-activate] Admin ${session.user.email} manually activated project ${projectId}`
-  );
+  const reqHeaders = await headers();
+  await audit({
+    userId: session.user.id,
+    projectId,
+    action: "project.activate",
+    meta: { adminEmail: session.user.email, prevStatus: project.status },
+    ip: getClientIp(reqHeaders),
+  });
 
   return NextResponse.json({ ok: true });
 }

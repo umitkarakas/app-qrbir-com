@@ -4,3 +4,4 @@ export * from "./themes";
 export * from "./studio";
 export * from "./approvals";
 export * from "./orders";
+export * from "./audit_logs";

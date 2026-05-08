@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { pendingOrders, woocommerceOrders, projects } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { audit } from "@/lib/audit";
 
 const WC_WEBHOOK_SECRET = process.env.WC_WEBHOOK_SECRET ?? "";
 
@@ -114,9 +115,12 @@ export async function POST(req: NextRequest) {
             });
           }
 
-          console.log(
-            `[wc-webhook] Order ${wcOrderId} → project ${pending.projectId} published`
-          );
+          await audit({
+            userId: pending.userId,
+            projectId: pending.projectId,
+            action: "order.completed",
+            meta: { wcOrderId, refToken, orderType: pending.orderType },
+          });
         }
       }
     }

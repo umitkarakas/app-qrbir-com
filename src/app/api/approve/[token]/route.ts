@@ -8,6 +8,7 @@ import {
   sendRevisionRequestedEmail,
   sendApprovedEmail,
 } from "@/lib/mailer";
+import { audit, getClientIp } from "@/lib/audit";
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "")
   .split(",")
@@ -109,6 +110,14 @@ export async function POST(
       "revision-requested"
     );
   }
+
+  await audit({
+    userId: project?.userId ?? null,
+    projectId: approval.projectId,
+    action: decision === "approve" ? "approval.approve" : "approval.revision",
+    meta: { token, versionNumber: approval.versionNumber, note: note ?? null },
+    ip: getClientIp(req.headers),
+  });
 
   return NextResponse.json({ ok: true, decision });
 }

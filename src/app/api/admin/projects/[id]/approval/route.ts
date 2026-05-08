@@ -9,6 +9,7 @@ import {
   trySendMail,
   sendApprovalRequestEmail,
 } from "@/lib/mailer";
+import { audit, getClientIp } from "@/lib/audit";
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "")
   .split(",")
@@ -101,6 +102,20 @@ export async function POST(
       "approval-request"
     );
   }
+
+  const reqHeaders = await headers();
+  await audit({
+    userId: session.user.id,
+    projectId,
+    action: "approval.send",
+    meta: {
+      adminEmail: session.user.email,
+      versionNumber,
+      token,
+      customerEmail: customer?.email,
+    },
+    ip: getClientIp(reqHeaders),
+  });
 
   return NextResponse.json({ ok: true, approvalUrl, token });
 }

@@ -10,6 +10,7 @@ import { getSchemaModule } from "@/schemas";
 import { applyFreeLimits } from "@/lib/plan-limits";
 import type { ThemeConfig } from "@/types/theme";
 
+import { redirect } from "next/navigation";
 import { RestaurantMenuRenderer } from "@/components/renderers/restaurant-menu";
 import { BioLinkRenderer } from "@/components/renderers/bio-link";
 import { GoogleReviewRenderer } from "@/components/renderers/google-review";
@@ -168,6 +169,26 @@ export default async function PublicPage({
         body={gate?.body ?? ""}
       />
     );
+  }
+
+  // Campaign link — server-side redirect (daha hızlı, flash yok)
+  if (row.projectType === "campaign_link") {
+    const rawData = (row.contentJson as Record<string, unknown>) ?? {};
+    const targetUrl = rawData.url as string | undefined;
+    if (targetUrl) {
+      try {
+        const url = new URL(targetUrl);
+        const utmSource = rawData.utmSource as string | undefined;
+        const utmMedium = rawData.utmMedium as string | undefined;
+        const utmCampaign = rawData.utmCampaign as string | undefined;
+        if (utmSource) url.searchParams.set("utm_source", utmSource);
+        if (utmMedium) url.searchParams.set("utm_medium", utmMedium);
+        if (utmCampaign) url.searchParams.set("utm_campaign", utmCampaign);
+        redirect(url.toString());
+      } catch {
+        // Geçersiz URL — fallback rendering'e düş
+      }
+    }
   }
 
   // İçerik yükle ve migrate et

@@ -6,6 +6,7 @@ import { and, eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { getSchemaModule } from "@/schemas";
 import { migrateContent } from "@/lib/content-migrator";
+import { revalidatePath } from "next/cache";
 
 async function loadProject(projectId: number, userId: string) {
   const [project] = await db
@@ -143,6 +144,9 @@ export async function PUT(
     .update(projects)
     .set({ updatedAt: now })
     .where(eq(projects.id, projectId));
+
+  // On-demand revalidation: pub sayfasını cache'ten temizle
+  revalidatePath(`/pub/${project.subdomainType}/${project.slug}`);
 
   return NextResponse.json({
     content: parsed.data,

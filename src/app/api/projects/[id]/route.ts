@@ -5,6 +5,7 @@ import { projects, themes } from "@/db/schema";
 import { and, eq, ne } from "drizzle-orm";
 import { headers } from "next/headers";
 import { trySendMail, sendProjectPublishedEmail } from "@/lib/mailer";
+import { revalidatePath } from "next/cache";
 
 export async function GET(
   _request: NextRequest,
@@ -159,6 +160,13 @@ export async function PATCH(
         }),
       "project-published"
     );
+  }
+
+  // On-demand revalidation: pub sayfasını temizle (slug değişmiş olabilir)
+  const currentSlug = updates.slug ?? existing.slug;
+  revalidatePath(`/pub/${existing.subdomainType}/${currentSlug}`);
+  if (updates.slug && updates.slug !== existing.slug) {
+    revalidatePath(`/pub/${existing.subdomainType}/${existing.slug}`);
   }
 
   return NextResponse.json(updated);

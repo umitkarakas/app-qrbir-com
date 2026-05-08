@@ -90,6 +90,15 @@ export async function PATCH(
     updates.title = body.title.trim();
   }
 
+  // Kullanıcı tarafından değiştirilebilir status geçişleri
+  const ALLOWED_USER_STATUSES = ["published", "draft", "paused"] as const;
+  if (
+    typeof body.status === "string" &&
+    ALLOWED_USER_STATUSES.includes(body.status as (typeof ALLOWED_USER_STATUSES)[number])
+  ) {
+    updates.status = body.status as typeof projects.$inferInsert["status"];
+  }
+
   if (Object.keys(updates).length === 0) {
     return NextResponse.json({ error: "No valid updates" }, { status: 400 });
   }

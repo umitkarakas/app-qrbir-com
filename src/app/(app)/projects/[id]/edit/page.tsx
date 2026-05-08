@@ -10,6 +10,8 @@ import { migrateContent } from "@/lib/content-migrator";
 import RestaurantMenuForm from "./restaurant-menu-form";
 import BioLinkForm from "./bio-link-form";
 import GoogleReviewForm from "./google-review-form";
+import { PublishBar } from "./publish-bar";
+import { TitleEditor } from "./title-editor";
 import type { ThemeConfig } from "@/types/theme";
 
 export default async function EditPage({
@@ -28,9 +30,11 @@ export default async function EditPage({
     .select({
       id: projects.id,
       title: projects.title,
+      slug: projects.slug,
       projectType: projects.projectType,
+      subdomainType: projects.subdomainType,
+      status: projects.status,
       userId: projects.userId,
-      themeId: projects.themeId,
       themeConfig: themes.themeConfigJson,
       themeName: themes.name,
     })
@@ -92,18 +96,21 @@ export default async function EditPage({
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-4 py-10">
-        {/* Başlık */}
-        <div className="flex items-center justify-between mb-8">
+
+        {/* Başlık + Nav */}
+        <div className="flex items-start justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{row.title}</h1>
+            <TitleEditor projectId={row.id} initial={row.title} />
             <p className="text-gray-500 text-sm mt-1">
               İçerik bilgilerini doldurun
               {row.themeName && (
-                <span className="ml-2 text-gray-400">· 🎨 {row.themeName}</span>
+                <span className="ml-2 text-gray-400">
+                  · 🎨 {row.themeName}
+                </span>
               )}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0 mt-1">
             <Link
               href={`/projects/${row.id}/theme`}
               className="text-sm text-gray-500 hover:text-gray-700 px-3 py-2"
@@ -118,6 +125,14 @@ export default async function EditPage({
             </Link>
           </div>
         </div>
+
+        {/* Yayın durumu çubuğu */}
+        <PublishBar
+          projectId={row.id}
+          initialStatus={row.status}
+          subdomainType={row.subdomainType}
+          slug={row.slug}
+        />
 
         {/* Formlar */}
         {row.projectType === "restaurant_menu" && (

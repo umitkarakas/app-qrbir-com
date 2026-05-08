@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { CopyUrlButton } from "./copy-url-button";
 
 const STATUS_LABELS: Record<string, string> = {
   draft: "Taslak",
@@ -154,18 +155,25 @@ export default async function DashboardPage() {
                   </div>
                 </div>
 
-                <div className="ml-4 shrink-0 text-right">
+                <div className="ml-4 shrink-0 text-right space-y-1">
                   <div className="text-xs text-gray-400">
                     {new Date(project.createdAt).toLocaleDateString("tr-TR", {
                       day: "numeric",
                       month: "short",
                     })}
                   </div>
-                  {!project.themeName && (
-                    <div className="text-xs text-blue-600 mt-1">
-                      Tema seç →
+                  {project.status === "published" ? (
+                    <div className="flex items-center gap-1.5 justify-end">
+                      <span className="text-xs font-semibold text-green-600">
+                        🟢 Yayında
+                      </span>
+                      <CopyUrlButton
+                        url={`https://${SUBDOMAIN_MAP[project.subdomainType] ?? project.subdomainType}/${project.slug}`}
+                      />
                     </div>
-                  )}
+                  ) : !project.themeName ? (
+                    <div className="text-xs text-blue-600">Tema seç →</div>
+                  ) : null}
                 </div>
               </Link>
             ))}

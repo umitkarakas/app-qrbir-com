@@ -48,3 +48,7 @@ qrbir_proje_plani.md
 *.tsbuildinfo
 next-env.d.ts
 .claude/
+
+# User uploaded files
+/public/uploads/*
+!/public/uploads/.gitkeep

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Field, FormSection, SaveBar, inputCls, useSaver } from "./_form-shell";
+import { ImageUploader } from "@/components/image-uploader";
 import type { BioLinkV1Type } from "@/schemas/bio_link/v1";
 import type { ThemeConfig } from "@/types/theme";
 import { PhoneFrame } from "@/components/phone-frame";
@@ -67,18 +68,15 @@ export default function BioLinkForm({
             maxLength={280}
           />
         </Field>
-        <Field label="Avatar URL">
-          <input
-            className={inputCls}
+        <Field label="Profil Fotoğrafı">
+          <ImageUploader
             value={c.profile.avatarUrl ?? ""}
-            onChange={(e) =>
-              setC({
-                ...c,
-                profile: { ...c.profile, avatarUrl: e.target.value },
-              })
+            onChange={(url) =>
+              setC({ ...c, profile: { ...c.profile, avatarUrl: url } })
             }
-            placeholder="https://…"
-            type="url"
+            label=""
+            hint="PNG/JPG, maks. 8 MB"
+            shape="circle"
           />
         </Field>
       </FormSection>

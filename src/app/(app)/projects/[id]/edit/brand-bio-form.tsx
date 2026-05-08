@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Field, FormSection, SaveBar, inputCls, useSaver } from "./_form-shell";
+import { ImageUploader } from "@/components/image-uploader";
 import type { BrandBioV1Type } from "@/schemas/brand_bio/v1";
 import type { ThemeConfig } from "@/types/theme";
 import { PhoneFrame } from "@/components/phone-frame";
@@ -72,22 +73,22 @@ export default function BrandBioForm({
               maxLength={500}
             />
           </Field>
-          <Field label="Logo URL">
-            <input
-              className={inputCls}
+          <Field label="Logo">
+            <ImageUploader
               value={c.brand.logoUrl ?? ""}
-              onChange={(e) => setC({ ...c, brand: { ...c.brand, logoUrl: e.target.value } })}
-              placeholder="https://…"
-              type="url"
+              onChange={(url) => setC({ ...c, brand: { ...c.brand, logoUrl: url } })}
+              label=""
+              hint="Yuvarlak veya kare, PNG/JPG"
+              shape="circle"
             />
           </Field>
-          <Field label="Kapak Görseli URL">
-            <input
-              className={inputCls}
+          <Field label="Kapak Görseli">
+            <ImageUploader
               value={c.brand.coverUrl ?? ""}
-              onChange={(e) => setC({ ...c, brand: { ...c.brand, coverUrl: e.target.value } })}
-              placeholder="https://…"
-              type="url"
+              onChange={(url) => setC({ ...c, brand: { ...c.brand, coverUrl: url } })}
+              label=""
+              hint="Geniş yatay görsel önerilir"
+              shape="square"
             />
           </Field>
           <Field label="Web Sitesi">

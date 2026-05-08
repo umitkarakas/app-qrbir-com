@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Field, FormSection, SaveBar, inputCls, useSaver } from "./_form-shell";
+import { ImageUploader } from "@/components/image-uploader";
 import type { RestaurantMenuV1Type } from "@/schemas/restaurant_menu/v1";
 import type { ThemeConfig } from "@/types/theme";
 import { PhoneFrame } from "@/components/phone-frame";
@@ -128,13 +129,13 @@ export default function RestaurantMenuForm({
           />
         </Field>
         <div className="grid grid-cols-2 gap-2">
-          <Field label="Logo URL">
-            <input
-              className={inputCls}
-              type="url"
+          <Field label="Logo">
+            <ImageUploader
               value={c.restaurant.logoUrl ?? ""}
-              onChange={(e) => setRestaurant("logoUrl", e.target.value)}
-              placeholder="https://…"
+              onChange={(url) => setRestaurant("logoUrl", url)}
+              label=""
+              hint="PNG/JPG, maks. 8 MB"
+              shape="circle"
             />
           </Field>
           <Field label="Para birimi">

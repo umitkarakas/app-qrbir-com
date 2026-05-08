@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Field, FormSection, SaveBar, inputCls, useSaver } from "./_form-shell";
+import { ImageUploader } from "@/components/image-uploader";
 import type { GoogleReviewV1Type } from "@/schemas/google_review/v1";
 import type { ThemeConfig } from "@/types/theme";
 import { PhoneFrame } from "@/components/phone-frame";
@@ -49,18 +50,15 @@ export default function GoogleReviewForm({
             maxLength={280}
           />
         </Field>
-        <Field label="Logo URL">
-          <input
-            className={inputCls}
-            type="url"
+        <Field label="Logo">
+          <ImageUploader
             value={c.business.logoUrl ?? ""}
-            onChange={(e) =>
-              setC({
-                ...c,
-                business: { ...c.business, logoUrl: e.target.value },
-              })
+            onChange={(url) =>
+              setC({ ...c, business: { ...c.business, logoUrl: url } })
             }
-            placeholder="https://…"
+            label=""
+            hint="PNG/JPG, maks. 8 MB"
+            shape="circle"
           />
         </Field>
       </FormSection>

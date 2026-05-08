@@ -103,7 +103,7 @@ export default function GoogleReviewForm({
           >
             {[1, 2, 3, 4, 5].map((n) => (
               <option key={n} value={n}>
-                {n} yıldız ve üzeri Google'a yönlenir
+                {n} yıldız ve üzeri Google&apos;a yönlenir
               </option>
             ))}
           </select>

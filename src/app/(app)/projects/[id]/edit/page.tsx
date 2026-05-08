@@ -38,6 +38,8 @@ export default async function EditPage({
       projectType: projects.projectType,
       subdomainType: projects.subdomainType,
       status: projects.status,
+      viewCount: projects.viewCount,
+      qrCount: projects.qrCount,
       userId: projects.userId,
       themeConfig: themes.themeConfigJson,
       themeName: themes.name,
@@ -115,6 +117,12 @@ export default async function EditPage({
               {row.themeName && (
                 <span className="ml-2 text-gray-400">
                   · 🎨 {row.themeName}
+                </span>
+              )}
+              {row.status === "published" && (
+                <span className="ml-2 text-gray-400">
+                  · 👁 {row.viewCount ?? 0} görüntüleme
+                  {(row.qrCount ?? 0) > 0 && ` · 📱 ${row.qrCount} QR`}
                 </span>
               )}
             </p>

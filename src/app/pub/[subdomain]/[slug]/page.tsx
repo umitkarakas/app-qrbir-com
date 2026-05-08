@@ -14,6 +14,7 @@ import { BioLinkRenderer } from "@/components/renderers/bio-link";
 import { GoogleReviewRenderer } from "@/components/renderers/google-review";
 import { BrandBioRenderer } from "@/components/renderers/brand-bio";
 import { EventInvitationRenderer } from "@/components/renderers/event-invitation";
+import { ViewTracker } from "@/components/view-tracker";
 
 // --- Sabitler ---
 
@@ -139,10 +140,14 @@ export async function generateMetadata({
 
 export default async function PublicPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ subdomain: string; slug: string }>;
+  searchParams: Promise<{ src?: string }>;
 }) {
   const { subdomain, slug } = await params;
+  const { src } = await searchParams;
+  const trackSrc: "qr" | "direct" = src === "qr" ? "qr" : "direct";
 
   // Geçersiz subdomain
   if (!VALID_SUBDOMAINS.includes(subdomain as ValidSubdomain)) notFound();
@@ -186,6 +191,9 @@ export default async function PublicPage({
 
   return (
     <main style={{ minHeight: "100vh" }}>
+      {/* Görüntülenme takibi — fire-and-forget */}
+      <ViewTracker projectId={row.id} src={trackSrc} />
+
       {/* Renderer */}
       {row.projectType === "restaurant_menu" && (
         <RestaurantMenuRenderer

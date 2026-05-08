@@ -61,6 +61,8 @@ export const projects = pgTable(
     isFree: boolean("is_free").notNull().default(true),
     isPremium: boolean("is_premium").notNull().default(false),
     publishedUrl: text("published_url"),
+    viewCount: integer("view_count").notNull().default(0),
+    qrCount: integer("qr_count").notNull().default(0),
     expiresAt: timestamp("expires_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()

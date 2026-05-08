@@ -46,7 +46,7 @@ export async function GET(
   const domain =
     SUBDOMAIN_DOMAIN[project.subdomainType] ??
     `${project.subdomainType}.qrbir.com`;
-  const publicUrl = `https://${domain}/${project.slug}`;
+  const publicUrl = `https://${domain}/${project.slug}?src=qr`;
 
   const { searchParams } = new URL(request.url);
   const format = searchParams.get("format") ?? "png";

@@ -69,6 +69,8 @@ export default async function DashboardPage() {
       projectType: projects.projectType,
       subdomainType: projects.subdomainType,
       status: projects.status,
+      viewCount: projects.viewCount,
+      qrCount: projects.qrCount,
       createdAt: projects.createdAt,
       themeName: themes.name,
     })
@@ -172,6 +174,15 @@ export default async function DashboardPage() {
                       month: "short",
                     })}
                   </div>
+                  {/* Analitik sayaçlar */}
+                  {project.status === "published" && (
+                    <div className="flex items-center gap-2 justify-end text-xs text-gray-400">
+                      <span title="Sayfa görüntüleme">👁 {project.viewCount ?? 0}</span>
+                      {(project.qrCount ?? 0) > 0 && (
+                        <span title="QR tarama">📱 {project.qrCount}</span>
+                      )}
+                    </div>
+                  )}
                   {project.status === "published" ? (
                     <div className="flex items-center gap-1.5 justify-end">
                       <span className="text-xs font-semibold text-green-600">

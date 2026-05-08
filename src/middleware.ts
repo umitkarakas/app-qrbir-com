@@ -7,10 +7,10 @@ import { NextRequest, NextResponse } from "next/server";
  */
 const HOST_TO_SUBDOMAIN: Record<string, string> = {
   "m.qrbir.com": "m",   // restaurant_menu
-  "b.qrbir.com": "b",   // bio_link
-  "r.qrbir.com": "r",   // brand_bio
+  "b.qrbir.com": "b",   // bio_link + brand_bio
+  "r.qrbir.com": "r",   // google_review
   "e.qrbir.com": "e",   // event_invitation
-  "go.qrbir.com": "go", // google_review
+  "go.qrbir.com": "go", // campaign_link
 };
 
 export function middleware(request: NextRequest) {

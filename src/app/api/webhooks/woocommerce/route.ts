@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { pendingOrders, woocommerceOrders, projects } from "@/db/schema";
+import { pendingOrders, woocommerceOrders, projects, users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { audit } from "@/lib/audit";
+import { trySendMail, sendProjectPublishedEmail } from "@/lib/mailer";
 
 const WC_WEBHOOK_SECRET = process.env.WC_WEBHOOK_SECRET ?? "";
 
@@ -121,6 +122,38 @@ export async function POST(req: NextRequest) {
             action: "order.completed",
             meta: { wcOrderId, refToken, orderType: pending.orderType },
           });
+
+          // Müşteriye "projeniz yayına alındı" e-postası gönder
+          const [publishedProject] = await db
+            .select({
+              title: projects.title,
+              slug: projects.slug,
+              subdomainType: projects.subdomainType,
+            })
+            .from(projects)
+            .where(eq(projects.id, pending.projectId))
+            .limit(1);
+
+          const [customer] = await db
+            .select({ name: users.name, email: users.email })
+            .from(users)
+            .where(eq(users.id, pending.userId))
+            .limit(1);
+
+          if (customer?.email && publishedProject) {
+            const appUrl = process.env.BETTER_AUTH_URL ?? "https://app.qrbir.com";
+            const publicUrl = `https://${publishedProject.subdomainType}.qrbir.com/${publishedProject.slug}`;
+            trySendMail(
+              () =>
+                sendProjectPublishedEmail({
+                  to: customer.email,
+                  projectTitle: publishedProject.title,
+                  publicUrl,
+                  qrDownloadUrl: `${appUrl}/dashboard`,
+                }),
+              "project-published-wc"
+            );
+          }
         }
       }
     }

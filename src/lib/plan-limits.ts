@@ -95,7 +95,7 @@ export function checkFreeLimitWarnings(
     if (cats.length > l.maxCategories) {
       warnings.push(`Free planda en fazla ${l.maxCategories} kategori olabilir. Fazlası yayında gösterilmez.`);
     }
-    const totalItems = cats.reduce((sum, c) => {
+    const totalItems = cats.reduce((sum: number, c) => {
       return sum + ((c as Record<string, unknown[]>).items?.length ?? 0);
     }, 0);
     if (totalItems > l.maxTotalItems) {

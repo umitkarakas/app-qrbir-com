@@ -89,13 +89,13 @@ export default async function AuditPage() {
                           <span>{log.userName ?? log.userEmail}</span>
                         )}
                         {log.ip && <span>IP: {log.ip}</span>}
-                        {log.meta && (
+                        {log.meta != null && (
                           <details className="inline">
                             <summary className="cursor-pointer hover:text-gray-600">
                               meta ▸
                             </summary>
                             <pre className="mt-1 text-[10px] bg-gray-50 border border-gray-200 rounded p-2 max-w-md overflow-auto">
-                              {JSON.stringify(log.meta, null, 2)}
+                              {JSON.stringify(log.meta as Record<string, unknown>, null, 2)}
                             </pre>
                           </details>
                         )}

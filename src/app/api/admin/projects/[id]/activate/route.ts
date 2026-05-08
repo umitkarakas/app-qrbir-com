@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { projects, pendingOrders } from "@/db/schema";
+import { projects, pendingOrders, users } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { headers } from "next/headers";
 import { audit, getClientIp } from "@/lib/audit";
+import { trySendMail, sendProjectPublishedEmail } from "@/lib/mailer";
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "")
   .split(",")
@@ -27,7 +28,14 @@ export async function POST(
     return NextResponse.json({ error: "Invalid id" }, { status: 400 });
 
   const [project] = await db
-    .select({ id: projects.id, status: projects.status })
+    .select({
+      id: projects.id,
+      title: projects.title,
+      slug: projects.slug,
+      subdomainType: projects.subdomainType,
+      userId: projects.userId,
+      status: projects.status,
+    })
     .from(projects)
     .where(eq(projects.id, projectId))
     .limit(1);
@@ -61,6 +69,28 @@ export async function POST(
     meta: { adminEmail: session.user.email, prevStatus: project.status },
     ip: getClientIp(reqHeaders),
   });
+
+  // Müşteriye "projeniz yayına alındı" e-postası gönder
+  const [customer] = await db
+    .select({ name: users.name, email: users.email })
+    .from(users)
+    .where(eq(users.id, project.userId))
+    .limit(1);
+
+  if (customer?.email) {
+    const appUrl = process.env.BETTER_AUTH_URL ?? "https://app.qrbir.com";
+    const publicUrl = `https://${project.subdomainType}.qrbir.com/${project.slug}`;
+    trySendMail(
+      () =>
+        sendProjectPublishedEmail({
+          to: customer.email,
+          projectTitle: project.title,
+          publicUrl,
+          qrDownloadUrl: `${appUrl}/projects/${project.id}/edit`,
+        }),
+      "project-published"
+    );
+  }
 
   return NextResponse.json({ ok: true });
 }

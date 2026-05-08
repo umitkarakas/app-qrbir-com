@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Field, FormSection, SaveBar, inputCls, useSaver } from "./_form-shell";
+import { ImageUploader } from "@/components/image-uploader";
 import type { EventInvitationV1Type } from "@/schemas/event_invitation/v1";
 import type { ThemeConfig } from "@/types/theme";
 import { PhoneFrame } from "@/components/phone-frame";
@@ -104,13 +105,13 @@ export default function EventInvitationForm({
               maxLength={500}
             />
           </Field>
-          <Field label="Kapak Görseli URL">
-            <input
-              className={inputCls}
-              type="url"
+          <Field label="Kapak Görseli">
+            <ImageUploader
               value={c.event.coverUrl ?? ""}
-              onChange={(e) => setC({ ...c, event: { ...c.event, coverUrl: e.target.value } })}
-              placeholder="https://…"
+              onChange={(url) => setC({ ...c, event: { ...c.event, coverUrl: url } })}
+              label=""
+              hint="Etkinlik görseli — PNG/JPG, maks. 8 MB"
+              shape="square"
             />
           </Field>
         </FormSection>

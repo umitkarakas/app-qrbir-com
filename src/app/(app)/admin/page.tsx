@@ -5,9 +5,7 @@ import { eq, desc, inArray, count, sql } from "drizzle-orm";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { AdminStatusSelect } from "./admin-status-select";
-import { SendApprovalButton } from "./send-approval-button";
-import { ActivateButton } from "./activate-button";
+import { ProjectFilter } from "./project-filter";
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "").split(",").map((e) => e.trim()).filter(Boolean);
 
@@ -215,73 +213,8 @@ export default async function AdminPage() {
           )}
         </div>
 
-        {/* Proje tablosu */}
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 w-8">#</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500">Proje</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500">Tür</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500">URL</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500">Durum</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500">Tarih</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500">Onay</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {allProjects.map((project) => (
-                  <tr key={project.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-3 text-xs text-gray-400">{project.id}</td>
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-gray-900 truncate max-w-[180px]">
-                        {project.title}
-                      </div>
-                      {project.themeName && (
-                        <div className="text-xs text-gray-400">🎨 {project.themeName}</div>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">
-                      {PROJECT_TYPE_LABELS[project.projectType] ?? project.projectType}
-                    </td>
-                    <td className="px-4 py-3">
-                      <a
-                        href={`https://${project.subdomainType}.qrbir.com/${project.slug}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs font-mono text-blue-600 hover:underline"
-                      >
-                        {project.subdomainType}.qrbir.com/{project.slug}
-                      </a>
-                    </td>
-                    <td className="px-4 py-3">
-                      <AdminStatusSelect
-                        projectId={project.id}
-                        currentStatus={project.status}
-                        statusLabels={STATUS_LABELS}
-                        statusColors={STATUS_COLORS}
-                      />
-                    </td>
-                    <td className="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">
-                      {new Date(project.createdAt).toLocaleDateString("tr-TR", {
-                        day: "numeric",
-                        month: "short",
-                        year: "2-digit",
-                      })}
-                    </td>
-                    <td className="px-4 py-3 space-y-1">
-                      <SendApprovalButton projectId={project.id} />
-                      {(project.status === "payment_pending" || project.status === "approved" || project.status === "paid") && (
-                        <ActivateButton projectId={project.id} />
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        {/* Proje tablosu — arama ve filtreleme ile */}
+        <ProjectFilter projects={allProjects} />
       </div>
     </div>
   );

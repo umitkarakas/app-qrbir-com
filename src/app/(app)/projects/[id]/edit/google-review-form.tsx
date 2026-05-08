@@ -3,19 +3,26 @@
 import { useState } from "react";
 import { Field, FormSection, SaveBar, inputCls, useSaver } from "./_form-shell";
 import type { GoogleReviewV1Type } from "@/schemas/google_review/v1";
+import type { ThemeConfig } from "@/types/theme";
+import { PhoneFrame } from "@/components/phone-frame";
+import { GoogleReviewRenderer } from "@/components/renderers/google-review";
 
 export default function GoogleReviewForm({
   projectId,
   initial,
+  theme,
 }: {
   projectId: number;
   initial: GoogleReviewV1Type;
+  theme?: ThemeConfig | null;
 }) {
   const [c, setC] = useState<GoogleReviewV1Type>(initial);
   const { saving, error, message, save } = useSaver(projectId);
 
   return (
-    <>
+    <div className="flex gap-6 items-start">
+      {/* Sol: Form */}
+      <div className="flex-1 min-w-0">
       <FormSection title="İşletme">
         <Field label="İşletme adı *">
           <input
@@ -128,6 +135,17 @@ export default function GoogleReviewForm({
         message={message}
         onSave={() => save(c)}
       />
-    </>
+      </div>
+
+      {/* Sağ: Canlı Önizleme */}
+      {theme && (
+        <div className="hidden lg:block shrink-0 sticky top-6">
+          <p className="text-xs text-gray-400 text-center mb-3 font-medium">Canlı Önizleme</p>
+          <PhoneFrame>
+            <GoogleReviewRenderer content={c} theme={theme} />
+          </PhoneFrame>
+        </div>
+      )}
+    </div>
   );
 }

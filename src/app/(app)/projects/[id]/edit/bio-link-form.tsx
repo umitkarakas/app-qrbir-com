@@ -3,13 +3,18 @@
 import { useState } from "react";
 import { Field, FormSection, SaveBar, inputCls, useSaver } from "./_form-shell";
 import type { BioLinkV1Type } from "@/schemas/bio_link/v1";
+import type { ThemeConfig } from "@/types/theme";
+import { PhoneFrame } from "@/components/phone-frame";
+import { BioLinkRenderer } from "@/components/renderers/bio-link";
 
 export default function BioLinkForm({
   projectId,
   initial,
+  theme,
 }: {
   projectId: number;
   initial: BioLinkV1Type;
+  theme?: ThemeConfig | null;
 }) {
   const [c, setC] = useState<BioLinkV1Type>(initial);
   const { saving, error, message, save } = useSaver(projectId);
@@ -36,7 +41,9 @@ export default function BioLinkForm({
   }
 
   return (
-    <>
+    <div className="flex gap-6 items-start">
+      {/* Sol: Form */}
+      <div className="flex-1 min-w-0">
       <FormSection title="Profil" description="Sayfada görünecek temel bilgiler">
         <Field label="İsim *">
           <input
@@ -148,6 +155,17 @@ export default function BioLinkForm({
         message={message}
         onSave={() => save(c)}
       />
-    </>
+      </div>
+
+      {/* Sağ: Canlı Önizleme */}
+      {theme && (
+        <div className="hidden lg:block shrink-0 sticky top-6">
+          <p className="text-xs text-gray-400 text-center mb-3 font-medium">Canlı Önizleme</p>
+          <PhoneFrame>
+            <BioLinkRenderer content={c} theme={theme} />
+          </PhoneFrame>
+        </div>
+      )}
+    </div>
   );
 }

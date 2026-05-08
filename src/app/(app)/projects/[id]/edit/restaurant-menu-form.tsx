@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { Field, FormSection, SaveBar, inputCls, useSaver } from "./_form-shell";
 import type { RestaurantMenuV1Type } from "@/schemas/restaurant_menu/v1";
+import type { ThemeConfig } from "@/types/theme";
+import { PhoneFrame } from "@/components/phone-frame";
+import { RestaurantMenuRenderer } from "@/components/renderers/restaurant-menu";
 
 type Category = RestaurantMenuV1Type["categories"][number];
 type Item = Category["items"][number];
@@ -16,9 +19,11 @@ const CURRENCY_LABELS: Record<RestaurantMenuV1Type["currency"], string> = {
 export default function RestaurantMenuForm({
   projectId,
   initial,
+  theme,
 }: {
   projectId: number;
   initial: RestaurantMenuV1Type;
+  theme?: ThemeConfig | null;
 }) {
   const [c, setC] = useState<RestaurantMenuV1Type>(initial);
   const { saving, error, message, save } = useSaver(projectId);
@@ -85,7 +90,9 @@ export default function RestaurantMenuForm({
   }
 
   return (
-    <>
+    <div className="flex gap-6 items-start">
+      {/* Sol: Form */}
+      <div className="flex-1 min-w-0">
       <FormSection title="Restoran Bilgileri">
         <Field label="Restoran adı *">
           <input
@@ -260,6 +267,17 @@ export default function RestaurantMenuForm({
         message={message}
         onSave={() => save(c)}
       />
-    </>
+      </div>
+
+      {/* Sağ: Canlı Önizleme */}
+      {theme && (
+        <div className="hidden lg:block shrink-0 sticky top-6">
+          <p className="text-xs text-gray-400 text-center mb-3 font-medium">Canlı Önizleme</p>
+          <PhoneFrame>
+            <RestaurantMenuRenderer content={c} theme={theme} />
+          </PhoneFrame>
+        </div>
+      )}
+    </div>
   );
 }

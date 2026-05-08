@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { projects, projectContents } from "@/db/schema";
+import { projects, projectContents, themes } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
@@ -10,6 +10,7 @@ import { migrateContent } from "@/lib/content-migrator";
 import RestaurantMenuForm from "./restaurant-menu-form";
 import BioLinkForm from "./bio-link-form";
 import GoogleReviewForm from "./google-review-form";
+import type { ThemeConfig } from "@/types/theme";
 
 export default async function EditPage({
   params,
@@ -23,17 +24,26 @@ export default async function EditPage({
   const projectId = parseInt(id, 10);
   if (Number.isNaN(projectId)) notFound();
 
-  const [project] = await db
-    .select()
+  const [row] = await db
+    .select({
+      id: projects.id,
+      title: projects.title,
+      projectType: projects.projectType,
+      userId: projects.userId,
+      themeId: projects.themeId,
+      themeConfig: themes.themeConfigJson,
+      themeName: themes.name,
+    })
     .from(projects)
+    .leftJoin(themes, eq(projects.themeId, themes.id))
     .where(
       and(eq(projects.id, projectId), eq(projects.userId, session.user.id))
     )
     .limit(1);
 
-  if (!project) notFound();
+  if (!row) notFound();
 
-  const mod = getSchemaModule(project.projectType);
+  const mod = getSchemaModule(row.projectType);
 
   if (!mod) {
     return (
@@ -45,7 +55,7 @@ export default async function EditPage({
               Bu ürün tipi için içerik formu yakında
             </h1>
             <p className="text-gray-500 text-sm mb-5">
-              {project.projectType} formu sonraki fazda eklenecek.
+              {row.projectType} formu sonraki fazda eklenecek.
             </p>
             <Link
               href="/dashboard"
@@ -68,7 +78,7 @@ export default async function EditPage({
   let initialContent: unknown;
   if (existing) {
     const result = migrateContent(
-      project.projectType,
+      row.projectType,
       existing.contentJson,
       existing.schemaVersion
     );
@@ -77,24 +87,28 @@ export default async function EditPage({
     initialContent = mod.defaultContent;
   }
 
+  const themeConfig = row.themeConfig as ThemeConfig | null;
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-3xl mx-auto px-4 py-10">
+      <div className="max-w-6xl mx-auto px-4 py-10">
+        {/* Başlık */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              {project.title}
-            </h1>
+            <h1 className="text-2xl font-bold text-gray-900">{row.title}</h1>
             <p className="text-gray-500 text-sm mt-1">
               İçerik bilgilerini doldurun
+              {row.themeName && (
+                <span className="ml-2 text-gray-400">· 🎨 {row.themeName}</span>
+              )}
             </p>
           </div>
           <div className="flex items-center gap-2">
             <Link
-              href={`/projects/${project.id}/theme`}
+              href={`/projects/${row.id}/theme`}
               className="text-sm text-gray-500 hover:text-gray-700 px-3 py-2"
             >
-              Tema
+              Tema Değiştir
             </Link>
             <Link
               href="/dashboard"
@@ -105,22 +119,26 @@ export default async function EditPage({
           </div>
         </div>
 
-        {project.projectType === "restaurant_menu" && (
+        {/* Formlar */}
+        {row.projectType === "restaurant_menu" && (
           <RestaurantMenuForm
-            projectId={project.id}
+            projectId={row.id}
             initial={initialContent as Parameters<typeof RestaurantMenuForm>[0]["initial"]}
+            theme={themeConfig}
           />
         )}
-        {project.projectType === "bio_link" && (
+        {row.projectType === "bio_link" && (
           <BioLinkForm
-            projectId={project.id}
+            projectId={row.id}
             initial={initialContent as Parameters<typeof BioLinkForm>[0]["initial"]}
+            theme={themeConfig}
           />
         )}
-        {project.projectType === "google_review" && (
+        {row.projectType === "google_review" && (
           <GoogleReviewForm
-            projectId={project.id}
+            projectId={row.id}
             initial={initialContent as Parameters<typeof GoogleReviewForm>[0]["initial"]}
+            theme={themeConfig}
           />
         )}
       </div>

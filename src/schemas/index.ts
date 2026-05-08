@@ -3,6 +3,7 @@ import * as bioLink from "./bio_link";
 import * as googleReview from "./google_review";
 import * as brandBio from "./brand_bio";
 import * as eventInvitation from "./event_invitation";
+import * as campaignLink from "./campaign_link";
 import type { z } from "zod";
 
 export type SchemaModule = {
@@ -18,6 +19,7 @@ export const SCHEMAS: Partial<Record<string, SchemaModule>> = {
   google_review: googleReview,
   brand_bio: brandBio,
   event_invitation: eventInvitation,
+  campaign_link: campaignLink,
 };
 
 export function getSchemaModule(projectType: string): SchemaModule | null {

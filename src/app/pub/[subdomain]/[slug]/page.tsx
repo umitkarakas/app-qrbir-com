@@ -15,6 +15,7 @@ import { BioLinkRenderer } from "@/components/renderers/bio-link";
 import { GoogleReviewRenderer } from "@/components/renderers/google-review";
 import { BrandBioRenderer } from "@/components/renderers/brand-bio";
 import { EventInvitationRenderer } from "@/components/renderers/event-invitation";
+import { CampaignLinkRenderer } from "@/components/renderers/campaign-link";
 import { ViewTracker } from "@/components/view-tracker";
 
 // --- Sabitler ---
@@ -233,8 +234,13 @@ export default async function PublicPage({
           theme={themeConfig}
         />
       )}
+      {row.projectType === "campaign_link" && (
+        <CampaignLinkRenderer
+          content={content as Parameters<typeof CampaignLinkRenderer>[0]["content"]}
+        />
+      )}
       {/* Desteklenmeyen tip */}
-      {!["restaurant_menu", "bio_link", "google_review", "brand_bio", "event_invitation"].includes(
+      {!["restaurant_menu", "bio_link", "google_review", "brand_bio", "event_invitation", "campaign_link"].includes(
         row.projectType
       ) && (
         <StatusPage

@@ -12,6 +12,7 @@ import BioLinkForm from "./bio-link-form";
 import GoogleReviewForm from "./google-review-form";
 import BrandBioForm from "./brand-bio-form";
 import EventInvitationForm from "./event-invitation-form";
+import CampaignLinkForm from "./campaign-link-form";
 import { StudioRequestButton } from "./studio-request-button";
 import { PublishBar } from "./publish-bar";
 import { CheckoutButton } from "./checkout-button";
@@ -229,6 +230,12 @@ export default async function EditPage({
             projectId={row.id}
             initial={initialContent as Parameters<typeof EventInvitationForm>[0]["initial"]}
             theme={themeConfig}
+          />
+        )}
+        {row.projectType === "campaign_link" && (
+          <CampaignLinkForm
+            projectId={row.id}
+            initial={initialContent as Parameters<typeof CampaignLinkForm>[0]["initial"]}
           />
         )}
       </div>

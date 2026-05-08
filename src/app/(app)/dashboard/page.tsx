@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CopyUrlButton } from "./copy-url-button";
+import { LogoutButton } from "@/components/logout-button";
 
 const STATUS_LABELS: Record<string, string> = {
   draft: "Taslak",
@@ -93,6 +94,7 @@ export default async function DashboardPage() {
             >
               Hesabım
             </Link>
+            <LogoutButton className="text-sm text-gray-500 hover:text-gray-700 px-3 py-2" />
             <Link
               href="/new"
               className="bg-black text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors"

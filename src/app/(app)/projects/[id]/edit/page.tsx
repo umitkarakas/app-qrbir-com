@@ -12,6 +12,7 @@ import BioLinkForm from "./bio-link-form";
 import GoogleReviewForm from "./google-review-form";
 import { PublishBar } from "./publish-bar";
 import { QrPanel } from "./qr-panel";
+import { SlugEditor } from "./slug-editor";
 import { TitleEditor } from "./title-editor";
 import type { ThemeConfig } from "@/types/theme";
 
@@ -102,6 +103,11 @@ export default async function EditPage({
         <div className="flex items-start justify-between mb-6">
           <div>
             <TitleEditor projectId={row.id} initial={row.title} />
+            <SlugEditor
+              projectId={row.id}
+              initialSlug={row.slug}
+              subdomainType={row.subdomainType}
+            />
             <p className="text-gray-500 text-sm mt-1">
               İçerik bilgilerini doldurun
               {row.themeName && (

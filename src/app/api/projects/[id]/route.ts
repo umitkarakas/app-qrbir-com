@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { projects, themes } from "@/db/schema";
-import { and, eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 import { headers } from "next/headers";
 
 export async function GET(
@@ -88,6 +88,37 @@ export async function PATCH(
 
   if (typeof body.title === "string" && body.title.trim().length > 0) {
     updates.title = body.title.trim();
+  }
+
+  // Slug güncelleme
+  if (typeof body.slug === "string") {
+    const slug = body.slug.toLowerCase().trim().replace(/\s+/g, "-");
+    // Format: en az 2 karakter, sadece a-z, 0-9, tire
+    if (!/^[a-z0-9][a-z0-9-]{0,58}[a-z0-9]$|^[a-z0-9]{1,2}$/.test(slug)) {
+      return NextResponse.json(
+        { error: "Geçersiz slug: sadece küçük harf, rakam ve tire kullanılabilir (en az 2 karakter)" },
+        { status: 400 }
+      );
+    }
+    // Aynı subdomain'de çakışma kontrolü
+    const [conflict] = await db
+      .select({ id: projects.id })
+      .from(projects)
+      .where(
+        and(
+          eq(projects.subdomainType, existing.subdomainType),
+          eq(projects.slug, slug),
+          ne(projects.id, projectId)
+        )
+      )
+      .limit(1);
+    if (conflict) {
+      return NextResponse.json(
+        { error: "Bu slug zaten kullanımda" },
+        { status: 409 }
+      );
+    }
+    updates.slug = slug;
   }
 
   // Kullanıcı tarafından değiştirilebilir status geçişleri

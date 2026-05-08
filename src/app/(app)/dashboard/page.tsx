@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CopyUrlButton } from "./copy-url-button";
+import { DeleteProjectButton } from "./delete-project-button";
 import { LogoutButton } from "@/components/logout-button";
 
 const STATUS_LABELS: Record<string, string> = {
@@ -195,6 +196,12 @@ export default async function DashboardPage() {
                   ) : !project.themeName ? (
                     <div className="text-xs text-blue-600">Tema seç →</div>
                   ) : null}
+                  <div className="flex justify-end">
+                    <DeleteProjectButton
+                      projectId={project.id}
+                      projectTitle={project.title}
+                    />
+                  </div>
                 </div>
               </Link>
             ))}

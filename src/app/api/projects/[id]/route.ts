@@ -171,3 +171,37 @@ export async function PATCH(
 
   return NextResponse.json(updated);
 }
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { id } = await params;
+  const projectId = parseInt(id, 10);
+  if (Number.isNaN(projectId)) return NextResponse.json({ error: "Invalid id" }, { status: 400 });
+
+  const [project] = await db
+    .select({
+      id: projects.id,
+      slug: projects.slug,
+      subdomainType: projects.subdomainType,
+      status: projects.status,
+      userId: projects.userId,
+    })
+    .from(projects)
+    .where(and(eq(projects.id, projectId), eq(projects.userId, session.user.id)))
+    .limit(1);
+
+  if (!project) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  // Yayındaki projeyi silmek için onay gerekir — API'den geliyor, onay zaten frontend'de alındı
+  await db.delete(projects).where(eq(projects.id, projectId));
+
+  // Pub cache'ini temizle
+  revalidatePath(`/pub/${project.subdomainType}/${project.slug}`);
+
+  return NextResponse.json({ ok: true });
+}

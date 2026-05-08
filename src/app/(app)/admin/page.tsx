@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { projects, themes, studioOrders } from "@/db/schema";
-import { eq, desc, inArray } from "drizzle-orm";
+import { projects, themes, studioOrders, users, pendingOrders } from "@/db/schema";
+import { eq, desc, inArray, count, sql } from "drizzle-orm";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -61,7 +61,7 @@ export default async function AdminPage() {
     redirect("/dashboard");
   }
 
-  const [allProjects, pendingStudioOrders] = await Promise.all([
+  const [allProjects, pendingStudioOrders, [userCountRow], [viewCountRow], [pendingOrderCountRow]] = await Promise.all([
     db
       .select({
         id: projects.id,
@@ -88,6 +88,12 @@ export default async function AdminPage() {
       .from(studioOrders)
       .where(inArray(studioOrders.status, ["pending", "in_progress"]))
       .orderBy(desc(studioOrders.createdAt)),
+    // Toplam kullanıcı sayısı
+    db.select({ total: count() }).from(users),
+    // Toplam görüntülenme
+    db.select({ total: sql<number>`coalesce(sum(${projects.viewCount}), 0)` }).from(projects),
+    // Bekleyen ödeme siparişleri
+    db.select({ total: count() }).from(pendingOrders).where(eq(pendingOrders.status, "pending")),
   ]);
 
   const statusCounts = allProjects.reduce<Record<string, number>>((acc, p) => {
@@ -120,6 +126,36 @@ export default async function AdminPage() {
             >
               ← Panele Dön
             </Link>
+          </div>
+        </div>
+
+        {/* Özet kartlar */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+          {[
+            { label: "Toplam Proje", value: allProjects.length, icon: "📋" },
+            { label: "Yayında", value: statusCounts["published"] ?? 0, icon: "🟢" },
+            { label: "Kullanıcı", value: userCountRow?.total ?? 0, icon: "👤" },
+            { label: "Görüntülenme", value: Number(viewCountRow?.total ?? 0).toLocaleString("tr-TR"), icon: "👁" },
+          ].map((stat) => (
+            <div key={stat.label} className="bg-white rounded-xl border border-gray-200 px-4 py-4">
+              <div className="text-2xl mb-1">{stat.icon}</div>
+              <div className="text-xl font-bold text-gray-900">{stat.value}</div>
+              <div className="text-xs text-gray-500 mt-0.5">{stat.label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Durum dağılımı */}
+        <div className="bg-white rounded-xl border border-gray-200 px-5 py-4 mb-6">
+          <h2 className="text-sm font-semibold text-gray-900 mb-3">Durum Dağılımı</h2>
+          <div className="flex flex-wrap gap-2">
+            {Object.entries(statusCounts)
+              .sort(([, a], [, b]) => b - a)
+              .map(([status, cnt]) => (
+                <span key={status} className={`text-xs px-2.5 py-1 rounded-full font-medium ${STATUS_COLORS[status] ?? "bg-gray-100 text-gray-600"}`}>
+                  {STATUS_LABELS[status] ?? status}: {cnt}
+                </span>
+              ))}
           </div>
         </div>
 

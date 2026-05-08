@@ -14,6 +14,25 @@ const MAX_DIM = 1600;
 /** Thumbnail genişliği */
 const THUMB_W = 320;
 
+// Basit in-memory rate limiter: dakikada maks 20 yükleme / kullanıcı
+const uploadCounts = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT = 20;
+const RATE_WINDOW_MS = 60_000;
+
+function checkRateLimit(userId: string): boolean {
+  const now = Date.now();
+  const entry = uploadCounts.get(userId);
+
+  if (!entry || now > entry.resetAt) {
+    uploadCounts.set(userId, { count: 1, resetAt: now + RATE_WINDOW_MS });
+    return true;
+  }
+
+  if (entry.count >= RATE_LIMIT) return false;
+  entry.count++;
+  return true;
+}
+
 function sanitizeName(name: string): string {
   return name
     .toLowerCase()
@@ -26,6 +45,14 @@ function sanitizeName(name: string): string {
 export async function POST(req: NextRequest) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  // Rate limiting
+  if (!checkRateLimit(session.user.id)) {
+    return NextResponse.json(
+      { error: "Çok fazla yükleme isteği. Lütfen bekleyin." },
+      { status: 429 }
+    );
+  }
 
   let formData: FormData;
   try {

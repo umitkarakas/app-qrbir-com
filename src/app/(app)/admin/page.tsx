@@ -41,15 +41,6 @@ const STATUS_COLORS: Record<string, string> = {
   cancelled: "bg-red-50 text-red-400",
 };
 
-const PROJECT_TYPE_LABELS: Record<string, string> = {
-  restaurant_menu: "Restoran Menüsü",
-  bio_link: "Bio Link",
-  brand_bio: "Marka Bio",
-  google_review: "Google Yorum",
-  event_invitation: "Etkinlik Daveti",
-  campaign_link: "Kampanya Linki",
-};
-
 export default async function AdminPage() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) redirect("/login");
@@ -128,12 +119,13 @@ export default async function AdminPage() {
         </div>
 
         {/* Özet kartlar */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-8">
           {[
             { label: "Toplam Proje", value: allProjects.length, icon: "📋" },
             { label: "Yayında", value: statusCounts["published"] ?? 0, icon: "🟢" },
             { label: "Kullanıcı", value: userCountRow?.total ?? 0, icon: "👤" },
             { label: "Görüntülenme", value: Number(viewCountRow?.total ?? 0).toLocaleString("tr-TR"), icon: "👁" },
+            { label: "Bekleyen Ödeme", value: pendingOrderCountRow?.total ?? 0, icon: "💳" },
           ].map((stat) => (
             <div key={stat.label} className="bg-white rounded-xl border border-gray-200 px-4 py-4">
               <div className="text-2xl mb-1">{stat.icon}</div>

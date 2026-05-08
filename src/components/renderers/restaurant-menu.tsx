@@ -112,48 +112,55 @@ export function RestaurantMenuRenderer({
               background: colors.card ?? "#fff",
               border: `1px solid ${colors.border ?? "#e5e7eb"}`,
               borderRadius: radius,
-              padding: "10px 12px",
               marginBottom: 8,
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-              gap: 8,
+              overflow: "hidden",
             }}
           >
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontWeight: 600, fontSize: 13, color: colors.cardFg ?? colors.fg, lineHeight: 1.3 }}>
-                {item.name || "Ürün Adı"}
+            {/* Ürün görseli — tam genişlik, üstte */}
+            {item.imageUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={item.imageUrl}
+                alt={item.name}
+                style={{ width: "100%", height: 140, objectFit: "cover", display: "block" }}
+              />
+            )}
+            <div style={{ padding: "10px 12px", display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: 600, fontSize: 13, color: colors.cardFg ?? colors.fg, lineHeight: 1.3 }}>
+                  {item.name || "Ürün Adı"}
+                </div>
+                {item.description && (
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: colors.muted ?? "#6b7280",
+                      marginTop: 3,
+                      lineHeight: 1.4,
+                      overflow: "hidden",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                    }}
+                  >
+                    {item.description}
+                  </div>
+                )}
               </div>
-              {item.description && (
+              {item.price != null && (
                 <div
                   style={{
-                    fontSize: 11,
-                    color: colors.muted ?? "#6b7280",
-                    marginTop: 3,
-                    lineHeight: 1.4,
-                    overflow: "hidden",
-                    display: "-webkit-box",
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: "vertical",
+                    fontWeight: 700,
+                    fontSize: 14,
+                    color: colors.accent,
+                    whiteSpace: "nowrap",
+                    flexShrink: 0,
                   }}
                 >
-                  {item.description}
+                  {symbol}{item.price.toFixed(2)}
                 </div>
               )}
             </div>
-            {item.price != null && (
-              <div
-                style={{
-                  fontWeight: 700,
-                  fontSize: 14,
-                  color: colors.accent,
-                  whiteSpace: "nowrap",
-                  flexShrink: 0,
-                }}
-              >
-                {symbol}{item.price.toFixed(2)}
-              </div>
-            )}
           </div>
         ))}
       </div>

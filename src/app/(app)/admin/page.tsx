@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { AdminStatusSelect } from "./admin-status-select";
+import { SendApprovalButton } from "./send-approval-button";
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "").split(",").map((e) => e.trim()).filter(Boolean);
 
@@ -181,6 +182,7 @@ export default async function AdminPage() {
                   <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500">URL</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500">Durum</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500">Tarih</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500">Onay</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -222,6 +224,9 @@ export default async function AdminPage() {
                         month: "short",
                         year: "2-digit",
                       })}
+                    </td>
+                    <td className="px-4 py-3">
+                      <SendApprovalButton projectId={project.id} />
                     </td>
                   </tr>
                 ))}

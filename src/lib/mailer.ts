@@ -157,6 +157,70 @@ export async function sendApprovedEmail({
   });
 }
 
+/** Admin müşteriye onay linki gönderdiğinde */
+export async function sendApprovalRequestEmail({
+  to,
+  customerName,
+  projectTitle,
+  approvalUrl,
+  adminNote,
+}: {
+  to: string;
+  customerName: string;
+  projectTitle: string;
+  approvalUrl: string;
+  adminNote?: string;
+}) {
+  return getResend().emails.send({
+    from: FROM,
+    to,
+    subject: `"${projectTitle}" — Onayınız Bekleniyor`,
+    html: baseHtml(`
+      <h1 style="margin:0 0 8px;font-size:22px;color:#111827;">Projeniz hazır! 🎉</h1>
+      <p style="margin:0 0 6px;font-size:15px;color:#4b5563;line-height:1.6;">
+        Merhaba ${customerName}, <strong>${projectTitle}</strong> projenizin hazırlığı tamamlandı.
+      </p>
+      <p style="margin:0 0 24px;font-size:14px;color:#6b7280;line-height:1.6;">
+        Lütfen önizlemeyi inceleyin. Onaylarsanız proje yayına alınacak, revizyon isterseniz ekibimiz düzenleme yapacak.
+      </p>
+      ${adminNote ? `<div style="background:#f9fafb;border-left:3px solid #d1d5db;padding:12px 16px;margin-bottom:24px;border-radius:0 8px 8px 0;font-size:13px;color:#4b5563;"><strong>Ekibimizin notu:</strong><br>${adminNote}</div>` : ""}
+      ${btn("Önizle ve Onayla", approvalUrl, "#16a34a")}
+      <p style="margin:16px 0 0;font-size:12px;color:#9ca3af;">
+        Bu link 7 gün geçerlidir.
+      </p>
+    `),
+  });
+}
+
+/** Müşteri revizyon istediğinde — admin'e bildirim */
+export async function sendRevisionRequestedEmail({
+  adminEmail,
+  customerName,
+  projectTitle,
+  note,
+  adminUrl,
+}: {
+  adminEmail: string;
+  customerName: string;
+  projectTitle: string;
+  note?: string;
+  adminUrl: string;
+}) {
+  return getResend().emails.send({
+    from: FROM,
+    to: adminEmail,
+    subject: `Revizyon İstendi: "${projectTitle}"`,
+    html: baseHtml(`
+      <h1 style="margin:0 0 8px;font-size:22px;color:#111827;">Revizyon Talebi 🔄</h1>
+      <p style="margin:0 0 16px;font-size:15px;color:#4b5563;line-height:1.6;">
+        <strong>${customerName}</strong>, <strong>${projectTitle}</strong> projesi için revizyon talep etti.
+      </p>
+      ${note ? `<div style="background:#fff7ed;border-left:3px solid #f97316;padding:12px 16px;margin-bottom:24px;border-radius:0 8px 8px 0;font-size:13px;color:#4b5563;"><strong>Müşteri notu:</strong><br>${note}</div>` : ""}
+      ${btn("Admin Panelinde İncele", adminUrl, "#dc2626")}
+    `),
+  });
+}
+
 /** Yeni studio talebi — admin'e bildirim */
 export async function sendStudioRequestEmail({
   adminEmail,

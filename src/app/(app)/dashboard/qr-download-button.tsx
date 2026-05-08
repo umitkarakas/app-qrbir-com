@@ -30,27 +30,38 @@ export function QrDownloadButton({
     }
   }
 
+  const btnStyle = {
+    display: "grid",
+    placeItems: "center",
+    height: 34,
+    padding: "0 10px",
+    borderRadius: 12,
+    border: "1px solid rgba(255,255,255,0.65)",
+    background: "rgba(255,255,255,0.55)",
+    color: "var(--color-fg-2)",
+    fontSize: 11,
+    fontWeight: 700,
+    cursor: loading ? "not-allowed" : "pointer",
+    opacity: loading ? 0.5 : 1,
+    transition: "all 200ms",
+    fontFamily: "inherit",
+  } as const;
+
   return (
-    <div className="flex items-center gap-1">
+    <div style={{ display: "flex", gap: 6 }}>
       <button
-        onClick={(e) => {
-          e.preventDefault();
-          handleDownload("png");
-        }}
+        onClick={(e) => { e.preventDefault(); handleDownload("png"); }}
         disabled={loading}
         title="QR PNG indir"
-        className="text-xs text-gray-500 hover:text-black px-2 py-1 rounded hover:bg-gray-100 transition-colors disabled:opacity-50 flex items-center gap-1"
+        style={btnStyle}
       >
-        {loading ? "⏳" : "⬛"} QR
+        {loading ? "⏳" : "QR"}
       </button>
       <button
-        onClick={(e) => {
-          e.preventDefault();
-          handleDownload("svg");
-        }}
+        onClick={(e) => { e.preventDefault(); handleDownload("svg"); }}
         disabled={loading}
         title="QR SVG indir (vektörel)"
-        className="text-xs text-gray-400 hover:text-black px-1.5 py-1 rounded hover:bg-gray-100 transition-colors disabled:opacity-50"
+        style={{ ...btnStyle, color: "var(--color-fg-3)" }}
       >
         SVG
       </button>

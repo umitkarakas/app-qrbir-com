@@ -20,9 +20,24 @@ export function CopyUrlButton({ url }: { url: string }) {
   return (
     <button
       onClick={copy}
-      className="text-xs text-green-600 hover:text-green-800 font-medium transition-colors"
+      title="URL kopyala"
+      style={{
+        display: "grid",
+        placeItems: "center",
+        width: 34,
+        height: 34,
+        borderRadius: 12,
+        border: "1px solid rgba(255,255,255,0.65)",
+        background: copied ? "rgba(34,197,94,0.12)" : "rgba(255,255,255,0.55)",
+        color: copied ? "var(--color-success)" : "var(--color-fg-2)",
+        fontSize: 13,
+        fontWeight: 600,
+        cursor: "pointer",
+        transition: "all 200ms",
+        fontFamily: "inherit",
+      }}
     >
-      {copied ? "✓" : "Kopyala"}
+      {copied ? "✓" : "🔗"}
     </button>
   );
 }

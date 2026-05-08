@@ -7,6 +7,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CopyUrlButton } from "./copy-url-button";
 import { DeleteProjectButton } from "./delete-project-button";
+import { QrDownloadButton } from "./qr-download-button";
 import { LogoutButton } from "@/components/logout-button";
 
 const STATUS_LABELS: Record<string, string> = {
@@ -196,6 +197,13 @@ export default async function DashboardPage() {
                   ) : !project.themeName ? (
                     <div className="text-xs text-blue-600">Tema seç →</div>
                   ) : null}
+                  {/* QR İndir — tema seçilmiş her proje için */}
+                  {project.themeName && (
+                    <QrDownloadButton
+                      projectId={project.id}
+                      slug={project.slug}
+                    />
+                  )}
                   <div className="flex justify-end">
                     <DeleteProjectButton
                       projectId={project.id}

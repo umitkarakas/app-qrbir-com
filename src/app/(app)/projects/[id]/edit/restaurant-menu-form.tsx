@@ -240,6 +240,13 @@ export default function RestaurantMenuForm({
                     }
                     maxLength={500}
                   />
+                  <ImageUploader
+                    value={item.imageUrl ?? ""}
+                    onChange={(url) => updateItem(catIdx, itemIdx, { imageUrl: url })}
+                    label=""
+                    hint="Ürün görseli (opsiyonel)"
+                    shape="square"
+                  />
                 </div>
               ))}
               <button

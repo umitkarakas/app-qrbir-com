@@ -16,6 +16,7 @@ import { StudioRequestButton } from "./studio-request-button";
 import { PublishBar } from "./publish-bar";
 import { CheckoutButton } from "./checkout-button";
 import { QrPanel } from "./qr-panel";
+import { StickerPanel } from "./sticker-panel";
 import { SlugEditor } from "./slug-editor";
 import { TitleEditor } from "./title-editor";
 import type { ThemeConfig } from "@/types/theme";
@@ -183,6 +184,14 @@ export default async function EditPage({
         {/* QR Kod paneli */}
         <QrPanel
           projectId={row.id}
+          publicUrl={`https://${row.subdomainType}.qrbir.com/${row.slug}`}
+        />
+
+        {/* Sticker / Stand önizleme */}
+        <StickerPanel
+          projectId={row.id}
+          projectTitle={row.title}
+          projectType={row.projectType}
           publicUrl={`https://${row.subdomainType}.qrbir.com/${row.slug}`}
         />
 

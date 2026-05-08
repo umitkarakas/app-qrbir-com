@@ -123,8 +123,8 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({
     ok: true,
-    url: `${appUrl}/uploads/${filename}`,
-    thumbUrl: `${appUrl}/uploads/${thumbname}`,
+    url: `${appUrl}/api/uploads/${filename}`,
+    thumbUrl: `${appUrl}/api/uploads/${thumbname}`,
     size: processed.length,
   });
 }

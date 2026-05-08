@@ -16,84 +16,72 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
     setLoading(true);
-
-    const { error: authError } = await signIn.email({
-      email,
-      password,
-    });
-
+    const { error: authError } = await signIn.email({ email, password });
     setLoading(false);
-
-    if (authError) {
-      setError("E-posta veya şifre hatalı.");
-      return;
-    }
-
+    if (authError) { setError("E-posta veya şifre hatalı."); return; }
     router.push("/dashboard");
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">QRbir</h1>
-          <p className="text-gray-500 mt-1 text-sm">Hesabınıza giriş yapın</p>
+    <div className="lum-glass" style={{ width: "100%", maxWidth: 400, padding: 36, position: "relative", zIndex: 1 }}>
+      {/* Brand */}
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 32 }}>
+        <div className="lum-logomark" style={{ width: 40, height: 40 }}>
+          <div className="lum-logomark__diamond" style={{ width: 16, height: 16 }} />
+        </div>
+        <div>
+          <p style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "var(--color-fg-1)" }}>QRbir</p>
+          <p style={{ margin: 0, fontSize: 13, color: "var(--color-fg-3)" }}>Hesabınıza giriş yapın</p>
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        {error && (
+          <div style={{ padding: "10px 14px", borderRadius: 12, background: "var(--color-danger-bg)", border: "1px solid rgba(239,68,68,0.2)", fontSize: 13, color: "var(--color-danger)" }}>
+            {error}
+          </div>
+        )}
+
+        <div>
+          <label className="lum-label">E-posta</label>
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="lum-input"
+            placeholder="ornek@mail.com"
+          />
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4"
+        <div>
+          <label className="lum-label">Şifre</label>
+          <input
+            type="password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="lum-input"
+            placeholder="••••••••"
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="lum-cta"
+          style={{ marginTop: 4, opacity: loading ? 0.7 : 1, width: "100%", justifyContent: "center" }}
         >
-          {error && (
-            <div className="bg-red-50 text-red-700 text-sm rounded-lg px-3 py-2">
-              {error}
-            </div>
-          )}
+          {loading ? "Giriş yapılıyor…" : "Giriş Yap"}
+        </button>
+      </form>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              E-posta
-            </label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
-              placeholder="ornek@mail.com"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Şifre
-            </label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
-              placeholder="••••••••"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-black text-white rounded-lg py-2 text-sm font-medium hover:bg-gray-800 disabled:opacity-50 transition-colors"
-          >
-            {loading ? "Giriş yapılıyor…" : "Giriş Yap"}
-          </button>
-        </form>
-
-        <p className="text-center text-sm text-gray-500 mt-4">
-          Hesabınız yok mu?{" "}
-          <Link href="/register" className="text-black font-medium hover:underline">
-            Kayıt olun
-          </Link>
-        </p>
-      </div>
+      <p style={{ margin: "20px 0 0", textAlign: "center", fontSize: 13, color: "var(--color-fg-3)" }}>
+        Hesabınız yok mu?{" "}
+        <Link href="/register" style={{ color: "var(--color-accent-violet-deep)", fontWeight: 600, textDecoration: "none" }}>
+          Kayıt olun
+        </Link>
+      </p>
     </div>
   );
 }

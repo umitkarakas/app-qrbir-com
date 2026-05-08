@@ -16,54 +16,55 @@ export function QrPanel({
   const downloadSvg = `/api/projects/${projectId}/qr?format=svg`;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 px-5 py-4 mb-4">
+    <div className="lum-glass" style={{ padding: "14px 20px", marginBottom: 10 }}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center justify-between w-full text-left"
+        style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", background: "none", border: 0, padding: 0, cursor: "pointer", fontFamily: "inherit" }}
       >
-        <span className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+        <span style={{ fontSize: 13, fontWeight: 600, color: "var(--color-fg-1)", display: "flex", alignItems: "center", gap: 6 }}>
           📱 QR Kod
         </span>
-        <span className="text-xs text-gray-400 select-none">
+        <span style={{ fontSize: 11, color: "var(--color-fg-4)" }}>
           {open ? "▲ Kapat" : "▼ Göster"}
         </span>
       </button>
 
       {open && (
-        <div className="mt-4 flex flex-col sm:flex-row items-start gap-6">
+        <div style={{ marginTop: 16, display: "flex", flexDirection: "row", alignItems: "flex-start", gap: 20 }}>
           {/* QR Görüntüsü */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={previewSrc}
             alt="QR Kod"
-            className="w-36 h-36 border border-gray-200 rounded-xl shrink-0"
+            style={{ width: 128, height: 128, borderRadius: 12, border: "1px solid rgba(0,0,0,0.08)", flexShrink: 0 }}
           />
 
           {/* Bilgi + İndirme */}
-          <div className="flex-1 min-w-0">
-            <p className="text-xs text-gray-500 mb-1">Kodlanan adres:</p>
-            <p className="text-xs font-mono text-gray-700 bg-gray-50 border border-gray-200 rounded px-2 py-1.5 break-all mb-4">
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ margin: "0 0 4px", fontSize: 11, color: "var(--color-fg-3)" }}>Kodlanan adres:</p>
+            <p style={{ margin: "0 0 14px", fontSize: 11, fontFamily: "var(--font-geist-mono, monospace)", color: "var(--color-fg-2)", background: "rgba(0,0,0,0.04)", borderRadius: 6, padding: "6px 8px", wordBreak: "break-all", border: "1px solid rgba(0,0,0,0.06)" }}>
               {publicUrl}
             </p>
 
-            <div className="flex gap-2 flex-wrap">
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               <a
                 href={downloadPng}
-                download={`qr-kod.png`}
-                className="text-xs font-medium bg-black text-white px-3 py-1.5 rounded-lg hover:bg-gray-800 transition-colors"
+                download="qr-kod.png"
+                className="lum-cta"
+                style={{ fontSize: 12, height: 34, padding: "0 14px", textDecoration: "none" }}
               >
-                ↓ PNG İndir (yüksek çözünürlük)
+                ↓ PNG İndir
               </a>
               <a
                 href={downloadSvg}
-                download={`qr-kod.svg`}
-                className="text-xs font-medium bg-white border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors"
+                download="qr-kod.svg"
+                style={{ fontSize: 12, height: 34, padding: "0 14px", display: "inline-flex", alignItems: "center", borderRadius: 10, border: "1px solid rgba(255,255,255,0.65)", background: "rgba(255,255,255,0.55)", color: "var(--color-fg-2)", textDecoration: "none", fontWeight: 600 }}
               >
                 ↓ SVG İndir
               </a>
             </div>
 
-            <p className="text-[11px] text-gray-400 mt-2">
+            <p style={{ margin: "8px 0 0", fontSize: 11, color: "var(--color-fg-4)" }}>
               Baskı materyalleri için SVG veya yüksek çözünürlüklü PNG kullanın.
             </p>
           </div>

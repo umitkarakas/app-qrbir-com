@@ -5,6 +5,8 @@ import { desc, eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { AppHeader } from "@/components/layout/app-header";
+import { ChevronLeft } from "lucide-react";
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "")
   .split(",")
@@ -48,75 +50,68 @@ export default async function AuditPage() {
     .limit(200);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-5xl mx-auto px-4 py-10">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">Audit Log</h1>
-            <p className="text-sm text-gray-500 mt-0.5">Son 200 sistem aksiyonu</p>
-          </div>
-          <Link
-            href="/admin"
-            className="text-sm text-gray-500 hover:text-gray-700 px-3 py-2"
-          >
-            ← Admin Paneli
-          </Link>
-        </div>
+    <>
+      <AppHeader searchPlaceholder="Audit log'da ara..." />
 
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          {logs.length === 0 ? (
-            <div className="text-center py-16 text-gray-400 text-sm">
-              Henüz kayıt yok
-            </div>
-          ) : (
-            <div className="divide-y divide-gray-100">
-              {logs.map((log) => (
-                <div key={log.id} className="px-5 py-3 hover:bg-gray-50">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-medium text-gray-900">
-                          {ACTION_LABELS[log.action] ?? log.action}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
+        <div>
+          <h1 className="lum-section-title">Audit Log</h1>
+          <p className="lum-section-sub">Son 200 sistem aksiyonu</p>
+        </div>
+        <Link
+          href="/admin"
+          style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600, color: "var(--color-fg-3)", textDecoration: "none" }}
+        >
+          <ChevronLeft size={15} />
+          Admin Paneli
+        </Link>
+      </div>
+
+      <div className="lum-glass" style={{ padding: 0, overflow: "hidden" }}>
+        {logs.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "60px 0", fontSize: 13, color: "var(--color-fg-4)" }}>
+            Henüz kayıt yok
+          </div>
+        ) : (
+          <div>
+            {logs.map((log, i) => (
+              <div key={log.id} className="lum-project-row" style={{ padding: "12px 20px", borderTop: i > 0 ? "1px solid rgba(255,255,255,0.2)" : "none" }}>
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                      <span style={{ fontSize: 13, fontWeight: 500, color: "var(--color-fg-1)" }}>
+                        {ACTION_LABELS[log.action] ?? log.action}
+                      </span>
+                      {log.projectTitle && (
+                        <span style={{ fontSize: 11, background: "rgba(255,255,255,0.5)", color: "var(--color-fg-3)", padding: "2px 8px", borderRadius: 20, border: "1px solid rgba(255,255,255,0.6)" }}>
+                          {log.projectTitle}
                         </span>
-                        {log.projectTitle && (
-                          <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                            {log.projectTitle}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-3 mt-1 text-xs text-gray-400 flex-wrap">
-                        {log.userEmail && (
-                          <span>{log.userName ?? log.userEmail}</span>
-                        )}
-                        {log.ip && <span>IP: {log.ip}</span>}
-                        {log.meta != null && (
-                          <details className="inline">
-                            <summary className="cursor-pointer hover:text-gray-600">
-                              meta ▸
-                            </summary>
-                            <pre className="mt-1 text-[10px] bg-gray-50 border border-gray-200 rounded p-2 max-w-md overflow-auto">
-                              {JSON.stringify(log.meta as Record<string, unknown>, null, 2)}
-                            </pre>
-                          </details>
-                        )}
-                      </div>
+                      )}
                     </div>
-                    <div className="text-xs text-gray-400 shrink-0 pt-0.5">
-                      {new Date(log.createdAt).toLocaleString("tr-TR", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 4, fontSize: 11, color: "var(--color-fg-4)", flexWrap: "wrap" }}>
+                      {log.userEmail && <span>{log.userName ?? log.userEmail}</span>}
+                      {log.ip && <span>IP: {log.ip}</span>}
+                      {log.meta != null && (
+                        <details style={{ display: "inline" }}>
+                          <summary style={{ cursor: "pointer" }}>meta ▸</summary>
+                          <pre style={{ marginTop: 4, fontSize: 10, background: "rgba(0,0,0,0.06)", borderRadius: 6, padding: 8, maxWidth: 400, overflow: "auto", border: "1px solid rgba(0,0,0,0.08)" }}>
+                            {JSON.stringify(log.meta as Record<string, unknown>, null, 2)}
+                          </pre>
+                        </details>
+                      )}
                     </div>
                   </div>
+                  <div style={{ fontSize: 11, color: "var(--color-fg-4)", flexShrink: 0, paddingTop: 2 }}>
+                    {new Date(log.createdAt).toLocaleString("tr-TR", {
+                      day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit",
+                    })}
+                  </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
-    </div>
+    </>
   );
 }

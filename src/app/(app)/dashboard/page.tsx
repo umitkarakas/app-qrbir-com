@@ -8,19 +8,8 @@ import { redirect } from "next/navigation";
 import { CopyUrlButton } from "./copy-url-button";
 import { DeleteProjectButton } from "./delete-project-button";
 import { QrDownloadButton } from "./qr-download-button";
-import { AppSidebar } from "@/components/layout/app-sidebar";
-import {
-  LayoutGrid,
-  Zap,
-  Eye,
-  Smartphone,
-  Search,
-  Bell,
-  ChevronDown,
-  Plus,
-  MoreHorizontal,
-  ExternalLink,
-} from "lucide-react";
+import { AppHeader } from "@/components/layout/app-header";
+import { LayoutGrid, Zap, Eye, Smartphone, Plus, MoreHorizontal, ExternalLink } from "lucide-react";
 
 const STATUS_LABELS: Record<string, string> = {
   draft: "Taslak",
@@ -100,12 +89,6 @@ export default async function DashboardPage() {
   const totalViews = userProjects.reduce((sum, p) => sum + (p.viewCount ?? 0), 0);
   const totalScans = userProjects.reduce((sum, p) => sum + (p.qrCount ?? 0), 0);
 
-  const initials = session.user.name
-    ? session.user.name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2)
-    : "U";
-
-  const isAdmin = (session.user as { role?: string }).role === "admin";
-
   const metrics = [
     {
       label: "Toplam Proje",
@@ -124,7 +107,7 @@ export default async function DashboardPage() {
       gradient: "var(--gradient-tile-sky)",
     },
     {
-      label: "Toplam Görüntüleme",
+      label: "Görüntüleme",
       value: totalViews >= 1000 ? `${(totalViews / 1000).toFixed(1)}K` : totalViews.toString(),
       trend: totalViews > 0 ? "Tüm projeler" : "Henüz veri yok",
       trendPositive: totalViews > 0,
@@ -142,404 +125,146 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <div
-      className="lum-page"
-      style={{ position: "relative", padding: 24, overflow: "hidden" }}
-    >
-      {/* Decorative orbs */}
-      <div className="lum-bgdecor">
-        <div className="lum-orb lum-orb--violet" />
-        <div className="lum-orb lum-orb--sky" />
-        <div className="lum-orb lum-orb--peach" />
-        <div className="lum-streak" />
-      </div>
+    <>
+      {/* Shared header */}
+      <AppHeader
+        userName={session.user.name ?? undefined}
+        userEmail={session.user.email ?? undefined}
+        searchPlaceholder="Proje ara..."
+      />
 
-      {/* App shell */}
-      <div
+      {/* Metric cards */}
+      <section
         style={{
-          position: "relative",
-          zIndex: 1,
-          maxWidth: 1400,
-          margin: "0 auto",
-          display: "flex",
-          gap: 24,
-          alignItems: "flex-start",
+          display: "grid",
+          gridTemplateColumns: "repeat(4, 1fr)",
+          gap: 20,
         }}
       >
-        <AppSidebar
-          isAdmin={isAdmin}
-          userName={session.user.name ?? undefined}
-          userEmail={session.user.email ?? undefined}
-        />
-
-        {/* Main content */}
-        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 24 }}>
-
-          {/* Header */}
-          <header style={{ display: "flex", gap: 16, alignItems: "center" }}>
+        {metrics.map((m) => {
+          const Icon = m.icon;
+          return (
             <div
-              className="lum-glass"
-              style={{
-                flex: 1,
-                height: 56,
-                borderRadius: "var(--radius-card)",
-                display: "flex",
-                alignItems: "center",
-                padding: "0 18px",
-                gap: 12,
-                boxShadow: "var(--shadow-search)",
-              }}
+              key={m.label}
+              className="lum-glass lum-glass--hover"
+              style={{ padding: 20, minHeight: 156, display: "flex", flexDirection: "column", justifyContent: "space-between" }}
             >
-              <Search size={18} style={{ color: "var(--color-fg-4)", flexShrink: 0 }} />
-              <span style={{ fontSize: 14, color: "var(--color-fg-4)", flex: 1 }}>
-                Proje ara...
-              </span>
-              <span
-                style={{
-                  padding: "5px 11px",
-                  borderRadius: "var(--radius-chip)",
-                  border: "1px solid rgba(255,255,255,0.7)",
-                  background: "rgba(255,255,255,0.65)",
-                  boxShadow: "var(--inset-top-edge)",
-                  fontSize: 12,
-                  fontWeight: 600,
-                  color: "var(--color-fg-3)",
-                }}
-              >
-                ⌘ K
-              </span>
-            </div>
-
-            <div
-              className="lum-glass"
-              style={{
-                height: 56,
-                padding: "0 16px",
-                display: "flex",
-                alignItems: "center",
-                gap: 16,
-                boxShadow: "var(--shadow-search)",
-              }}
-            >
-              <button
-                style={{
-                  position: "relative",
-                  display: "grid",
-                  placeItems: "center",
-                  width: 38,
-                  height: 38,
-                  borderRadius: "var(--radius-control)",
-                  border: 0,
-                  background: "rgba(255,255,255,0.55)",
-                  color: "var(--color-fg-2)",
-                  cursor: "pointer",
-                }}
-              >
-                <Bell size={18} />
-                <span
-                  style={{
-                    position: "absolute",
-                    right: 8,
-                    top: 8,
-                    width: 9,
-                    height: 9,
-                    borderRadius: 999,
-                    background: "var(--color-accent-lilac)",
-                    border: "2px solid #fff",
-                  }}
-                />
-              </button>
-              <span style={{ width: 1, height: 28, background: "rgba(148,163,184,0.4)" }} />
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <span
-                  className="lum-avatar"
-                  style={{ width: 38, height: 38, fontSize: 12 }}
-                >
-                  {initials}
-                </span>
-                <div>
-                  <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "var(--color-fg-1)" }}>
-                    {session.user.name}
-                  </p>
-                  <p style={{ margin: 0, fontSize: 11, color: "var(--color-fg-3)" }}>
-                    {session.user.email}
-                  </p>
+              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+                <div className="lum-tile" style={{ width: 46, height: 46, background: m.gradient }}>
+                  <Icon size={19} />
                 </div>
-                <ChevronDown size={14} style={{ color: "var(--color-fg-4)" }} />
+                <button style={{ display: "grid", placeItems: "center", width: 30, height: 30, border: 0, borderRadius: 10, background: "transparent", color: "var(--color-fg-4)", cursor: "pointer" }}>
+                  <MoreHorizontal size={17} />
+                </button>
+              </div>
+              <div>
+                <p style={{ margin: 0, fontSize: 13, fontWeight: 500, color: "var(--color-fg-3)" }}>{m.label}</p>
+                <p style={{ margin: "6px 0 0", fontSize: 28, fontWeight: 600, color: "var(--color-fg-1)", letterSpacing: 0 }}>{m.value}</p>
+                <p style={{ margin: "8px 0 0", fontSize: 13, fontWeight: 600, color: m.trendPositive ? "var(--color-success)" : "var(--color-fg-4)" }}>{m.trend}</p>
               </div>
             </div>
-          </header>
+          );
+        })}
+      </section>
 
-          {/* Metric cards */}
-          <section
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(4, 1fr)",
-              gap: 20,
-            }}
-          >
-            {metrics.map((m) => {
-              const Icon = m.icon;
+      {/* Projects */}
+      <div className="lum-glass" style={{ padding: 28 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
+          <div>
+            <h1 className="lum-section-title">Projelerim</h1>
+            <p className="lum-section-sub">{totalProjects} proje · {publishedCount} yayında</p>
+          </div>
+          <Link href="/new" className="lum-cta">
+            <Plus size={15} />
+            Yeni Proje
+          </Link>
+        </div>
+
+        {userProjects.length === 0 ? (
+          <div style={{ borderRadius: 20, border: "1.5px dashed rgba(124,109,255,0.25)", padding: "56px 24px", textAlign: "center", background: "rgba(255,255,255,0.25)" }}>
+            <div style={{ fontSize: 36, marginBottom: 12 }}>📋</div>
+            <h2 style={{ margin: 0, fontSize: 17, fontWeight: 600, color: "var(--color-fg-1)" }}>Henüz proje yok</h2>
+            <p style={{ margin: "8px 0 24px", fontSize: 14, color: "var(--color-fg-3)" }}>İlk projenizi oluşturarak başlayın</p>
+            <Link href="/new" className="lum-cta" style={{ display: "inline-flex", width: "auto" }}>
+              <Plus size={15} />
+              Proje Oluştur
+            </Link>
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {userProjects.map((project) => {
+              const editHref = project.themeName ? `/projects/${project.id}/edit` : `/projects/${project.id}/theme`;
+              const gradient = TYPE_GRADIENT[project.projectType] ?? "var(--gradient-tile-violet)";
+              const emoji = TYPE_ICON[project.projectType] ?? "📁";
+              const typeLabel = PROJECT_TYPE_LABELS[project.projectType] ?? project.projectType;
+              const statusLabel = STATUS_LABELS[project.status] ?? project.status;
+              const publicUrl = `https://${SUBDOMAIN_MAP[project.subdomainType] ?? project.subdomainType}/${project.slug}`;
+
               return (
                 <div
-                  key={m.label}
-                  className="lum-glass lum-glass--hover"
-                  style={{ padding: 20, minHeight: 160, display: "flex", flexDirection: "column", justifyContent: "space-between" }}
+                  key={project.id}
+                  className="lum-project-row"
+                  style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 14px", borderRadius: 18, border: "1px solid rgba(255,255,255,0.55)", background: "rgba(255,255,255,0.36)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.68)" }}
                 >
-                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
-                    <div
-                      className="lum-tile"
-                      style={{ width: 48, height: 48, background: m.gradient }}
-                    >
-                      <Icon size={20} />
+                  <div className="lum-tile" style={{ width: 42, height: 42, background: gradient, fontSize: 19, flexShrink: 0 }}>{emoji}</div>
+
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
+                      <Link href={editHref} style={{ fontWeight: 600, fontSize: 14, color: "var(--color-fg-1)", textDecoration: "none", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {project.title}
+                      </Link>
+                      <span className={`status-${project.status}`} style={{ padding: "2px 9px", borderRadius: 999, fontSize: 11, fontWeight: 600, flexShrink: 0 }}>
+                        {statusLabel}
+                      </span>
                     </div>
-                    <button
-                      style={{
-                        display: "grid",
-                        placeItems: "center",
-                        width: 32,
-                        height: 32,
-                        border: 0,
-                        borderRadius: 12,
-                        background: "transparent",
-                        color: "var(--color-fg-4)",
-                        cursor: "pointer",
-                      }}
-                    >
-                      <MoreHorizontal size={18} />
-                    </button>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "var(--color-fg-3)" }}>
+                      <span>{typeLabel}</span>
+                      <span style={{ opacity: 0.35 }}>·</span>
+                      <span style={{ fontFamily: "var(--font-geist-mono, monospace)" }}>{SUBDOMAIN_MAP[project.subdomainType] ?? project.subdomainType}/{project.slug}</span>
+                      {project.themeName && <><span style={{ opacity: 0.35 }}>·</span><span>🎨 {project.themeName}</span></>}
+                    </div>
                   </div>
-                  <div>
-                    <p style={{ margin: 0, fontSize: 13, fontWeight: 500, color: "var(--color-fg-3)" }}>
-                      {m.label}
-                    </p>
-                    <p style={{ margin: "6px 0 0", fontSize: 28, fontWeight: 600, color: "var(--color-fg-1)", letterSpacing: 0 }}>
-                      {m.value}
-                    </p>
-                    <p style={{ margin: "10px 0 0", fontSize: 13, fontWeight: 600, color: m.trendPositive ? "var(--color-success)" : "var(--color-fg-4)" }}>
-                      {m.trend}
-                    </p>
+
+                  {project.status === "published" && (
+                    <div style={{ display: "flex", gap: 14, alignItems: "center", flexShrink: 0 }}>
+                      <div style={{ textAlign: "center" }}>
+                        <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "var(--color-fg-1)" }}>{project.viewCount ?? 0}</p>
+                        <p style={{ margin: 0, fontSize: 10, color: "var(--color-fg-4)" }}>görüntüleme</p>
+                      </div>
+                      {(project.qrCount ?? 0) > 0 && (
+                        <div style={{ textAlign: "center" }}>
+                          <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "var(--color-fg-1)" }}>{project.qrCount}</p>
+                          <p style={{ margin: 0, fontSize: 10, color: "var(--color-fg-4)" }}>QR</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div style={{ flexShrink: 0, fontSize: 11, color: "var(--color-fg-4)", fontWeight: 500, minWidth: 48, textAlign: "right" }}>
+                    {new Date(project.createdAt).toLocaleDateString("tr-TR", { day: "numeric", month: "short" })}
+                  </div>
+
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                    {!project.themeName && (
+                      <Link href={`/projects/${project.id}/theme`} style={{ fontSize: 12, fontWeight: 600, color: "var(--color-accent-violet-deep)", textDecoration: "none", whiteSpace: "nowrap" }}>
+                        Tema seç →
+                      </Link>
+                    )}
+                    {project.status === "published" && (
+                      <a href={publicUrl} target="_blank" rel="noopener noreferrer" style={{ display: "grid", placeItems: "center", width: 32, height: 32, borderRadius: 11, border: "1px solid rgba(255,255,255,0.65)", background: "rgba(255,255,255,0.55)", color: "var(--color-fg-2)", textDecoration: "none" }}>
+                        <ExternalLink size={13} />
+                      </a>
+                    )}
+                    {project.status === "published" && <CopyUrlButton url={publicUrl} />}
+                    {project.themeName && <QrDownloadButton projectId={project.id} slug={project.slug} />}
+                    <DeleteProjectButton projectId={project.id} projectTitle={project.title} />
                   </div>
                 </div>
               );
             })}
-          </section>
-
-          {/* Projects section */}
-          <div
-            className="lum-glass"
-            style={{ padding: 28, flex: 1 }}
-          >
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
-              <div>
-                <h1 style={{ margin: 0, fontSize: 22, fontWeight: 600, color: "var(--color-fg-1)", letterSpacing: 0 }}>
-                  Projelerim
-                </h1>
-                <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--color-fg-3)" }}>
-                  {totalProjects} proje · {publishedCount} yayında
-                </p>
-              </div>
-              <Link href="/new" className="lum-cta" style={{ fontSize: 14 }}>
-                <Plus size={16} />
-                Yeni Proje
-              </Link>
-            </div>
-
-            {userProjects.length === 0 ? (
-              <div
-                style={{
-                  borderRadius: 20,
-                  border: "1.5px dashed rgba(124,109,255,0.25)",
-                  padding: "64px 24px",
-                  textAlign: "center",
-                  background: "rgba(255,255,255,0.25)",
-                }}
-              >
-                <div style={{ fontSize: 40, marginBottom: 12 }}>📋</div>
-                <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600, color: "var(--color-fg-1)" }}>
-                  Henüz proje yok
-                </h2>
-                <p style={{ margin: "8px 0 24px", fontSize: 14, color: "var(--color-fg-3)" }}>
-                  İlk projenizi oluşturarak başlayın
-                </p>
-                <Link href="/new" className="lum-cta" style={{ display: "inline-flex", width: "auto" }}>
-                  <Plus size={16} />
-                  Proje Oluştur
-                </Link>
-              </div>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {userProjects.map((project) => {
-                  const editHref = project.themeName
-                    ? `/projects/${project.id}/edit`
-                    : `/projects/${project.id}/theme`;
-                  const gradient = TYPE_GRADIENT[project.projectType] ?? "var(--gradient-tile-violet)";
-                  const emoji = TYPE_ICON[project.projectType] ?? "📁";
-                  const typeLabel = PROJECT_TYPE_LABELS[project.projectType] ?? project.projectType;
-                  const statusLabel = STATUS_LABELS[project.status] ?? project.status;
-                  const statusClass = `status-${project.status}`;
-                  const publicUrl = `https://${SUBDOMAIN_MAP[project.subdomainType] ?? project.subdomainType}/${project.slug}`;
-
-                  return (
-                    <div
-                      key={project.id}
-                      className="lum-project-row"
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 16,
-                        padding: "14px 16px",
-                        borderRadius: 20,
-                        border: "1px solid rgba(255,255,255,0.55)",
-                        background: "rgba(255,255,255,0.36)",
-                        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.68)",
-                      }}
-                    >
-                      {/* Icon tile */}
-                      <div
-                        className="lum-tile"
-                        style={{ width: 44, height: 44, background: gradient, fontSize: 20, flexShrink: 0 }}
-                      >
-                        {emoji}
-                      </div>
-
-                      {/* Title + meta */}
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                          <Link
-                            href={editHref}
-                            style={{
-                              fontWeight: 600,
-                              fontSize: 15,
-                              color: "var(--color-fg-1)",
-                              textDecoration: "none",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
-                            {project.title}
-                          </Link>
-                          <span
-                            className={statusClass}
-                            style={{
-                              padding: "3px 10px",
-                              borderRadius: 999,
-                              fontSize: 12,
-                              fontWeight: 600,
-                              flexShrink: 0,
-                            }}
-                          >
-                            {statusLabel}
-                          </span>
-                        </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "var(--color-fg-3)" }}>
-                          <span>{typeLabel}</span>
-                          <span style={{ opacity: 0.4 }}>·</span>
-                          <span style={{ fontFamily: "var(--font-geist-mono, monospace)", fontSize: 11 }}>
-                            {SUBDOMAIN_MAP[project.subdomainType] ?? project.subdomainType}/{project.slug}
-                          </span>
-                          {project.themeName && (
-                            <>
-                              <span style={{ opacity: 0.4 }}>·</span>
-                              <span>🎨 {project.themeName}</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Stats */}
-                      {project.status === "published" && (
-                        <div style={{ display: "flex", gap: 16, alignItems: "center", flexShrink: 0 }}>
-                          <div style={{ textAlign: "center" }}>
-                            <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "var(--color-fg-1)" }}>
-                              {project.viewCount ?? 0}
-                            </p>
-                            <p style={{ margin: 0, fontSize: 11, color: "var(--color-fg-4)" }}>görüntüleme</p>
-                          </div>
-                          {(project.qrCount ?? 0) > 0 && (
-                            <div style={{ textAlign: "center" }}>
-                              <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "var(--color-fg-1)" }}>
-                                {project.qrCount}
-                              </p>
-                              <p style={{ margin: 0, fontSize: 11, color: "var(--color-fg-4)" }}>QR tarama</p>
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Date */}
-                      <div
-                        style={{
-                          flexShrink: 0,
-                          fontSize: 12,
-                          color: "var(--color-fg-4)",
-                          fontWeight: 500,
-                          minWidth: 56,
-                          textAlign: "right",
-                        }}
-                      >
-                        {new Date(project.createdAt).toLocaleDateString("tr-TR", {
-                          day: "numeric",
-                          month: "short",
-                        })}
-                      </div>
-
-                      {/* Actions */}
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-                        {!project.themeName && (
-                          <Link
-                            href={`/projects/${project.id}/theme`}
-                            style={{
-                              fontSize: 12,
-                              fontWeight: 600,
-                              color: "var(--color-accent-violet-deep)",
-                              textDecoration: "none",
-                            }}
-                          >
-                            Tema seç →
-                          </Link>
-                        )}
-                        {project.status === "published" && (
-                          <a
-                            href={publicUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{
-                              display: "grid",
-                              placeItems: "center",
-                              width: 34,
-                              height: 34,
-                              borderRadius: 12,
-                              border: "1px solid rgba(255,255,255,0.65)",
-                              background: "rgba(255,255,255,0.55)",
-                              color: "var(--color-fg-2)",
-                              textDecoration: "none",
-                            }}
-                          >
-                            <ExternalLink size={14} />
-                          </a>
-                        )}
-                        {project.status === "published" && (
-                          <CopyUrlButton url={publicUrl} />
-                        )}
-                        {project.themeName && (
-                          <QrDownloadButton projectId={project.id} slug={project.slug} />
-                        )}
-                        <DeleteProjectButton
-                          projectId={project.id}
-                          projectTitle={project.title}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
           </div>
-
-        </div>
+        )}
       </div>
-    </div>
+    </>
   );
 }

@@ -12,14 +12,14 @@ export function FormSection({
   children: ReactNode;
 }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5 mb-4">
-      <div className="mb-4">
-        <h2 className="font-semibold text-gray-900 text-sm">{title}</h2>
+    <div className="lum-glass" style={{ padding: 20, marginBottom: 12 }}>
+      <div style={{ marginBottom: 14 }}>
+        <h2 style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "var(--color-fg-1)" }}>{title}</h2>
         {description && (
-          <p className="text-xs text-gray-500 mt-0.5">{description}</p>
+          <p style={{ margin: "4px 0 0", fontSize: 12, color: "var(--color-fg-3)" }}>{description}</p>
         )}
       </div>
-      <div className="space-y-3">{children}</div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>{children}</div>
     </div>
   );
 }
@@ -35,17 +35,14 @@ export function Field({
 }) {
   return (
     <div>
-      <label className="block text-xs font-medium text-gray-700 mb-1">
-        {label}
-      </label>
+      <label className="lum-label">{label}</label>
       {children}
-      {hint && <p className="text-[11px] text-gray-400 mt-1">{hint}</p>}
+      {hint && <p style={{ fontSize: 11, color: "var(--color-fg-4)", margin: "4px 0 0" }}>{hint}</p>}
     </div>
   );
 }
 
-export const inputCls =
-  "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black";
+export const inputCls = "lum-input";
 
 export function SaveBar({
   saving,
@@ -59,20 +56,21 @@ export function SaveBar({
   onSave: () => void;
 }) {
   return (
-    <div className="sticky bottom-4 bg-white rounded-xl border border-gray-200 shadow-sm px-5 py-3 flex items-center justify-between mt-6">
-      <div className="text-sm">
+    <div className="lum-glass" style={{ position: "sticky", bottom: 16, padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 20, backdropFilter: "blur(20px)" }}>
+      <div style={{ fontSize: 13 }}>
         {error ? (
-          <span className="text-red-600">{error}</span>
+          <span style={{ color: "var(--color-danger)" }}>{error}</span>
         ) : message ? (
-          <span className="text-green-600">{message}</span>
+          <span style={{ color: "var(--color-success)" }}>{message}</span>
         ) : (
-          <span className="text-gray-400">Değişiklikleri kaydetmeyi unutmayın</span>
+          <span style={{ color: "var(--color-fg-4)" }}>Değişiklikleri kaydetmeyi unutmayın</span>
         )}
       </div>
       <button
         onClick={onSave}
         disabled={saving}
-        className="bg-black text-white text-sm font-medium px-5 py-2 rounded-lg hover:bg-gray-800 disabled:opacity-40"
+        className="lum-cta"
+        style={{ height: 38, padding: "0 20px", fontSize: 13, opacity: saving ? 0.6 : 1 }}
       >
         {saving ? "Kaydediliyor…" : "Kaydet"}
       </button>

@@ -67,34 +67,41 @@ export function PublishBar({
 
   return (
     <div
-      className={`rounded-xl border px-5 py-4 mb-6 flex items-center justify-between gap-4 transition-colors ${
-        isPublished
-          ? "bg-green-50 border-green-200"
-          : "bg-white border-gray-200"
-      }`}
+      className="lum-glass"
+      style={{
+        padding: "14px 20px",
+        marginBottom: 12,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 16,
+        ...(isPublished
+          ? { borderColor: "rgba(34,197,94,0.35)", background: "rgba(34,197,94,0.06)" }
+          : {}),
+      }}
     >
       {/* Sol: durum + URL */}
-      <div className="flex-1 min-w-0">
+      <div style={{ flex: 1, minWidth: 0 }}>
         {isPublished ? (
           <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="inline-flex items-center gap-1 text-xs font-semibold text-green-700 bg-green-100 px-2.5 py-0.5 rounded-full">
-                <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse inline-block" />
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, color: "#15803d", background: "rgba(34,197,94,0.12)", padding: "2px 8px", borderRadius: 20 }}>
+                <span style={{ width: 6, height: 6, background: "#22c55e", borderRadius: "50%", display: "inline-block", animation: "pulse 2s infinite" }} />
                 Yayında
               </span>
             </div>
-            <div className="flex items-center gap-3 min-w-0">
+            <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
               <a
                 href={publicUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-green-700 font-mono hover:underline truncate"
+                style={{ fontSize: 12, color: "#15803d", fontFamily: "var(--font-geist-mono, monospace)", textDecoration: "none", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
               >
                 {publicUrl}
               </a>
               <button
                 onClick={copyUrl}
-                className="text-xs text-green-600 hover:text-green-800 shrink-0 font-medium transition-colors"
+                style={{ fontSize: 12, fontWeight: 600, color: "#15803d", background: "none", border: 0, cursor: "pointer", flexShrink: 0, fontFamily: "inherit" }}
               >
                 {copied ? "✓ Kopyalandı" : "Kopyala"}
               </button>
@@ -102,29 +109,44 @@ export function PublishBar({
           </div>
         ) : (
           <div>
-            <span className="inline-flex items-center gap-1 text-xs font-semibold text-gray-500 bg-gray-100 px-2.5 py-0.5 rounded-full">
-              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full inline-block" />
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, color: "var(--color-fg-3)", background: "rgba(0,0,0,0.05)", padding: "2px 8px", borderRadius: 20 }}>
+              <span style={{ width: 6, height: 6, background: "var(--color-fg-4)", borderRadius: "50%", display: "inline-block" }} />
               Yayında Değil
             </span>
-            <p className="text-xs text-gray-400 mt-1.5">
+            <p style={{ margin: "6px 0 0", fontSize: 12, color: "var(--color-fg-4)" }}>
               Yayınlandığında{" "}
-              <span className="font-mono text-gray-500">{publicUrl}</span>{" "}
+              <span style={{ fontFamily: "var(--font-geist-mono, monospace)", color: "var(--color-fg-3)" }}>{publicUrl}</span>{" "}
               adresinde erişilebilir olacak.
             </p>
           </div>
         )}
-        {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
+        {error && <p style={{ margin: "6px 0 0", fontSize: 12, color: "var(--color-danger)" }}>{error}</p>}
       </div>
 
       {/* Sağ: buton */}
       <button
         onClick={toggle}
         disabled={loading}
-        className={`shrink-0 text-sm font-semibold px-4 py-2 rounded-lg disabled:opacity-40 transition-colors ${
-          isPublished
-            ? "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-            : "bg-green-600 text-white hover:bg-green-700"
-        }`}
+        className={isPublished ? undefined : "lum-cta"}
+        style={isPublished ? {
+          flexShrink: 0,
+          fontSize: 13,
+          fontWeight: 600,
+          padding: "8px 16px",
+          borderRadius: 10,
+          border: "1px solid rgba(255,255,255,0.65)",
+          background: "rgba(255,255,255,0.55)",
+          color: "var(--color-fg-2)",
+          cursor: loading ? "not-allowed" : "pointer",
+          opacity: loading ? 0.5 : 1,
+          fontFamily: "inherit",
+        } : {
+          flexShrink: 0,
+          height: 38,
+          padding: "0 16px",
+          fontSize: 13,
+          opacity: loading ? 0.6 : 1,
+        }}
       >
         {loading ? "…" : isPublished ? "Yayından Kaldır" : "🚀 Yayınla"}
       </button>

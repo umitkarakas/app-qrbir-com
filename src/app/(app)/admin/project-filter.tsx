@@ -79,18 +79,20 @@ export function ProjectFilter({ projects }: { projects: Project[] }) {
   return (
     <div>
       {/* Filtreler */}
-      <div className="flex gap-3 mb-4 flex-wrap">
+      <div style={{ display: "flex", gap: 10, marginBottom: 14, flexWrap: "wrap", alignItems: "center" }}>
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Proje adı, slug veya kullanıcı ID ara…"
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black w-64"
+          className="lum-input"
+          style={{ width: 280 }}
         />
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+          className="lum-input"
+          style={{ width: "auto" }}
         >
           <option value="">Tüm durumlar</option>
           {allStatuses.map((s) => (
@@ -102,65 +104,61 @@ export function ProjectFilter({ projects }: { projects: Project[] }) {
         {(search || statusFilter) && (
           <button
             onClick={() => { setSearch(""); setStatusFilter(""); }}
-            className="text-sm text-gray-500 hover:text-gray-700 px-3 py-2"
+            style={{ fontSize: 12, color: "var(--color-fg-3)", background: "rgba(255,255,255,0.4)", border: "1px solid rgba(255,255,255,0.55)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit" }}
           >
             Temizle
           </button>
         )}
-        <span className="text-sm text-gray-400 self-center">
+        <span style={{ fontSize: 12, color: "var(--color-fg-4)" }}>
           {filtered.length} / {projects.length} proje
         </span>
       </div>
 
       {/* Tablo */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-600">Proje</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-600 hidden sm:table-cell">Tür</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-600">Durum</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-600 hidden md:table-cell">Tarih</th>
-              <th className="text-right px-4 py-3 text-xs font-semibold text-gray-600">İşlemler</th>
+      <div className="lum-glass" style={{ padding: 0, overflow: "hidden" }}>
+        <table style={{ width: "100%", fontSize: 13, borderCollapse: "collapse" }}>
+          <thead>
+            <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.35)" }}>
+              <th style={{ textAlign: "left", padding: "12px 16px", fontSize: 11, fontWeight: 600, color: "var(--color-fg-3)" }}>Proje</th>
+              <th style={{ textAlign: "left", padding: "12px 16px", fontSize: 11, fontWeight: 600, color: "var(--color-fg-3)" }}>Tür</th>
+              <th style={{ textAlign: "left", padding: "12px 16px", fontSize: 11, fontWeight: 600, color: "var(--color-fg-3)" }}>Durum</th>
+              <th style={{ textAlign: "left", padding: "12px 16px", fontSize: 11, fontWeight: 600, color: "var(--color-fg-3)" }}>Tarih</th>
+              <th style={{ textAlign: "right", padding: "12px 16px", fontSize: 11, fontWeight: 600, color: "var(--color-fg-3)" }}>İşlemler</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={5} className="text-center py-10 text-gray-400 text-sm">
+                <td colSpan={5} style={{ textAlign: "center", padding: "40px 0", fontSize: 13, color: "var(--color-fg-4)" }}>
                   Sonuç bulunamadı
                 </td>
               </tr>
             ) : (
               filtered.map((project) => (
-                <tr key={project.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3">
-                    <div className="font-medium text-gray-900 truncate max-w-[200px]">
+                <tr key={project.id} className="lum-project-row" style={{ borderTop: "1px solid rgba(255,255,255,0.2)" }}>
+                  <td style={{ padding: "12px 16px" }}>
+                    <div style={{ fontWeight: 500, color: "var(--color-fg-1)", maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {project.title}
                     </div>
-                    <div className="text-xs text-gray-400 font-mono">
+                    <div style={{ fontSize: 11, color: "var(--color-fg-4)", fontFamily: "var(--font-geist-mono, monospace)", marginTop: 2 }}>
                       {SUBDOMAIN_DOMAIN[project.subdomainType] ?? project.subdomainType}/{project.slug}
                     </div>
                   </td>
-                  <td className="px-4 py-3 hidden sm:table-cell">
-                    <span className="text-xs text-gray-500">{project.projectType}</span>
+                  <td style={{ padding: "12px 16px" }}>
+                    <span style={{ fontSize: 11, color: "var(--color-fg-3)" }}>{project.projectType}</span>
                   </td>
-                  <td className="px-4 py-3">
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[project.status] ?? "bg-gray-100 text-gray-600"}`}>
+                  <td style={{ padding: "12px 16px" }}>
+                    <span style={{ fontSize: 11, padding: "3px 8px", borderRadius: 20, fontWeight: 500, background: "rgba(255,255,255,0.5)", color: "var(--color-fg-2)", border: "1px solid rgba(255,255,255,0.6)", whiteSpace: "nowrap" }}>
                       {STATUS_LABELS[project.status] ?? project.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 hidden md:table-cell">
-                    <span className="text-xs text-gray-400">
-                      {new Date(project.createdAt).toLocaleDateString("tr-TR", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
+                  <td style={{ padding: "12px 16px" }}>
+                    <span style={{ fontSize: 11, color: "var(--color-fg-4)" }}>
+                      {new Date(project.createdAt).toLocaleDateString("tr-TR", { day: "numeric", month: "short", year: "numeric" })}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-2 flex-wrap">
+                  <td style={{ padding: "12px 16px", textAlign: "right" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 6, flexWrap: "wrap" }}>
                       <AdminStatusSelect
                         projectId={project.id}
                         currentStatus={project.status}

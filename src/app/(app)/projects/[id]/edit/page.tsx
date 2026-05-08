@@ -5,6 +5,7 @@ import { and, eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 import { getSchemaModule } from "@/schemas";
 import { migrateContent } from "@/lib/content-migrator";
 import RestaurantMenuForm from "./restaurant-menu-form";
@@ -61,24 +62,17 @@ export default async function EditPage({
 
   if (!mod) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-2xl mx-auto px-4 py-10">
-          <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-            <div className="text-3xl mb-3">🚧</div>
-            <h1 className="font-semibold text-gray-900 mb-1">
-              Bu ürün tipi için içerik formu yakında
-            </h1>
-            <p className="text-gray-500 text-sm mb-5">
-              {row.projectType} formu sonraki fazda eklenecek.
-            </p>
-            <Link
-              href="/dashboard"
-              className="inline-block bg-black text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-gray-800"
-            >
-              Panele Dön
-            </Link>
-          </div>
-        </div>
+      <div className="lum-glass" style={{ maxWidth: 480, padding: 40, textAlign: "center" }}>
+        <div style={{ fontSize: 36, marginBottom: 12 }}>🚧</div>
+        <h1 style={{ margin: "0 0 8px", fontSize: 16, fontWeight: 600, color: "var(--color-fg-1)" }}>
+          Bu ürün tipi için içerik formu yakında
+        </h1>
+        <p style={{ margin: "0 0 20px", fontSize: 13, color: "var(--color-fg-3)" }}>
+          {row.projectType} formu sonraki fazda eklenecek.
+        </p>
+        <Link href="/dashboard" className="lum-cta" style={{ display: "inline-flex" }}>
+          Panele Dön
+        </Link>
       </div>
     );
   }
@@ -104,11 +98,9 @@ export default async function EditPage({
   const themeConfig = row.themeConfig as ThemeConfig | null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 py-10">
-
+    <>
         {/* Başlık + Nav */}
-        <div className="flex items-start justify-between mb-6">
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>
           <div>
             <TitleEditor projectId={row.id} initial={row.title} />
             <SlugEditor
@@ -116,33 +108,34 @@ export default async function EditPage({
               initialSlug={row.slug}
               subdomainType={row.subdomainType}
             />
-            <p className="text-gray-500 text-sm mt-1">
+            <p style={{ margin: "6px 0 0", fontSize: 13, color: "var(--color-fg-3)" }}>
               İçerik bilgilerini doldurun
               {row.themeName && (
-                <span className="ml-2 text-gray-400">
+                <span style={{ marginLeft: 8, color: "var(--color-fg-4)" }}>
                   · 🎨 {row.themeName}
                 </span>
               )}
               {row.status === "published" && (
-                <span className="ml-2 text-gray-400">
+                <span style={{ marginLeft: 8, color: "var(--color-fg-4)" }}>
                   · 👁 {row.viewCount ?? 0} görüntüleme
                   {(row.qrCount ?? 0) > 0 && ` · 📱 ${row.qrCount} QR`}
                 </span>
               )}
             </p>
           </div>
-          <div className="flex items-center gap-2 shrink-0 mt-1">
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0, marginTop: 4 }}>
             <Link
               href={`/projects/${row.id}/theme`}
-              className="text-sm text-gray-500 hover:text-gray-700 px-3 py-2"
+              style={{ fontSize: 13, fontWeight: 600, color: "var(--color-fg-3)", textDecoration: "none", padding: "6px 12px", borderRadius: 10, background: "rgba(255,255,255,0.4)", border: "1px solid rgba(255,255,255,0.55)" }}
             >
               Tema Değiştir
             </Link>
             <Link
               href="/dashboard"
-              className="text-sm text-gray-500 hover:text-gray-700 px-3 py-2"
+              style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13, fontWeight: 600, color: "var(--color-fg-3)", textDecoration: "none" }}
             >
-              ← Panele Dön
+              <ChevronLeft size={15} />
+              Geri
             </Link>
           </div>
         </div>
@@ -157,14 +150,14 @@ export default async function EditPage({
 
         {/* Ödemeye geç — approved veya payment_pending durumunda */}
         {(row.status === "approved" || row.status === "payment_pending") && (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 mb-6 flex items-center justify-between gap-4">
+          <div className="lum-glass" style={{ padding: "16px 20px", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, borderColor: "rgba(245,158,11,0.35)", background: "rgba(245,158,11,0.06)" }}>
             <div>
-              <p className="text-sm font-semibold text-amber-800">
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "var(--color-fg-1)" }}>
                 {row.status === "approved"
                   ? "✅ Projeniz onaylandı — ödeme ile yayına alabilirsiniz"
                   : "🕐 Ödeme bekleniyor"}
               </p>
-              <p className="text-xs text-amber-600 mt-0.5">
+              <p style={{ margin: "4px 0 0", fontSize: 12, color: "var(--color-fg-3)" }}>
                 Ödeme tamamlandıktan sonra projeniz otomatik olarak yayına alınacak.
               </p>
             </div>
@@ -238,7 +231,6 @@ export default async function EditPage({
             initial={initialContent as Parameters<typeof CampaignLinkForm>[0]["initial"]}
           />
         )}
-      </div>
-    </div>
+    </>
   );
 }

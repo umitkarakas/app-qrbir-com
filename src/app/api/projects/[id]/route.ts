@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { projects, themes } from "@/db/schema";
 import { and, eq, ne } from "drizzle-orm";
 import { headers } from "next/headers";
+import { trySendMail, sendProjectPublishedEmail } from "@/lib/mailer";
 
 export async function GET(
   _request: NextRequest,
@@ -136,11 +137,29 @@ export async function PATCH(
 
   updates.updatedAt = new Date();
 
+  const wasPublished = existing.status !== "published";
   const [updated] = await db
     .update(projects)
     .set(updates)
     .where(eq(projects.id, projectId))
     .returning();
+
+  // Yayınlandı bildirimi
+  if (wasPublished && updates.status === "published" && session.user.email) {
+    const slug = updates.slug ?? existing.slug;
+    const domain = `${existing.subdomainType}.qrbir.com`;
+    const publicUrl = `https://${domain}/${slug}`;
+    trySendMail(
+      () =>
+        sendProjectPublishedEmail({
+          to: session.user.email!,
+          projectTitle: updates.title ?? existing.title,
+          publicUrl,
+          qrDownloadUrl: `https://app.qrbir.com/api/projects/${projectId}/qr?format=png&size=1200`,
+        }),
+      "project-published"
+    );
+  }
 
   return NextResponse.json(updated);
 }

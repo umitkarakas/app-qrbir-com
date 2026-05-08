@@ -4,6 +4,13 @@ import { db } from "@/lib/db";
 import { projects } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
+import { users } from "@/db/schema";
+import {
+  trySendMail,
+  sendProjectPublishedEmail,
+  sendPreviewReadyEmail,
+  sendApprovedEmail,
+} from "@/lib/mailer";
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "")
   .split(",")
@@ -50,14 +57,73 @@ export async function PATCH(
     return NextResponse.json({ error: "Invalid status" }, { status: 400 });
   }
 
+  const newStatus = body.status as (typeof VALID_STATUSES)[number];
+
+  // Mevcut proje + kullanıcı e-postası
+  const [project] = await db
+    .select({
+      id: projects.id,
+      title: projects.title,
+      slug: projects.slug,
+      subdomainType: projects.subdomainType,
+      status: projects.status,
+      userId: projects.userId,
+    })
+    .from(projects)
+    .where(eq(projects.id, projectId))
+    .limit(1);
+
+  if (!project) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
   const [updated] = await db
     .update(projects)
-    .set({ status: body.status, updatedAt: new Date() })
+    .set({ status: newStatus, updatedAt: new Date() })
     .where(eq(projects.id, projectId))
     .returning({ id: projects.id, status: projects.status });
 
-  if (!updated) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  // Kullanıcı e-postasını çek
+  const [userRow] = await db
+    .select({ email: users.email, name: users.name })
+    .from(users)
+    .where(eq(users.id, project.userId))
+    .limit(1);
+
+  const userEmail = userRow?.email;
+  if (userEmail) {
+    const domain = `${project.subdomainType}.qrbir.com`;
+    const publicUrl = `https://${domain}/${project.slug}`;
+    const editUrl = `https://app.qrbir.com/projects/${project.id}/edit`;
+
+    if (newStatus === "published" && project.status !== "published") {
+      trySendMail(
+        () =>
+          sendProjectPublishedEmail({
+            to: userEmail,
+            projectTitle: project.title,
+            publicUrl,
+            qrDownloadUrl: `https://app.qrbir.com/api/projects/${project.id}/qr?format=png&size=1200`,
+          }),
+        "admin-published"
+      );
+    } else if (newStatus === "preview_ready") {
+      trySendMail(
+        () =>
+          sendPreviewReadyEmail({
+            to: userEmail,
+            projectTitle: project.title,
+            editUrl,
+          }),
+        "preview-ready"
+      );
+    } else if (newStatus === "approved" || newStatus === "payment_pending") {
+      trySendMail(
+        () =>
+          sendApprovedEmail({ to: userEmail, projectTitle: project.title }),
+        "approved"
+      );
+    }
   }
 
   return NextResponse.json(updated);

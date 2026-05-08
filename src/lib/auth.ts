@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "@/lib/db";
 import * as schema from "@/db/schema";
+import { trySendMail, sendWelcomeEmail } from "@/lib/mailer";
 
 const appUrl = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
 
@@ -19,6 +20,22 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user) => {
+          trySendMail(
+            () =>
+              sendWelcomeEmail({
+                to: user.email,
+                name: user.name ?? "Değerli Kullanıcı",
+              }),
+            "welcome"
+          );
+        },
+      },
+    },
   },
   session: {
     cookieCache: {

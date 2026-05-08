@@ -10,6 +10,8 @@ import { migrateContent } from "@/lib/content-migrator";
 import RestaurantMenuForm from "./restaurant-menu-form";
 import BioLinkForm from "./bio-link-form";
 import GoogleReviewForm from "./google-review-form";
+import BrandBioForm from "./brand-bio-form";
+import EventInvitationForm from "./event-invitation-form";
 import { PublishBar } from "./publish-bar";
 import { QrPanel } from "./qr-panel";
 import { SlugEditor } from "./slug-editor";
@@ -166,6 +168,20 @@ export default async function EditPage({
           <GoogleReviewForm
             projectId={row.id}
             initial={initialContent as Parameters<typeof GoogleReviewForm>[0]["initial"]}
+            theme={themeConfig}
+          />
+        )}
+        {row.projectType === "brand_bio" && (
+          <BrandBioForm
+            projectId={row.id}
+            initial={initialContent as Parameters<typeof BrandBioForm>[0]["initial"]}
+            theme={themeConfig}
+          />
+        )}
+        {row.projectType === "event_invitation" && (
+          <EventInvitationForm
+            projectId={row.id}
+            initial={initialContent as Parameters<typeof EventInvitationForm>[0]["initial"]}
             theme={themeConfig}
           />
         )}

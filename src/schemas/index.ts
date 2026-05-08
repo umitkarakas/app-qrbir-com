@@ -1,6 +1,8 @@
 import * as restaurantMenu from "./restaurant_menu";
 import * as bioLink from "./bio_link";
 import * as googleReview from "./google_review";
+import * as brandBio from "./brand_bio";
+import * as eventInvitation from "./event_invitation";
 import type { z } from "zod";
 
 export type SchemaModule = {
@@ -10,14 +12,12 @@ export type SchemaModule = {
   migrations: Record<number, (input: unknown) => unknown>;
 };
 
-/**
- * Faz 4'te 3 ürün tipi için schema mevcut.
- * Diğerleri (brand_bio, event_invitation, campaign_link) sonra eklenecek.
- */
 export const SCHEMAS: Partial<Record<string, SchemaModule>> = {
   restaurant_menu: restaurantMenu,
   bio_link: bioLink,
   google_review: googleReview,
+  brand_bio: brandBio,
+  event_invitation: eventInvitation,
 };
 
 export function getSchemaModule(projectType: string): SchemaModule | null {

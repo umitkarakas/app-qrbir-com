@@ -12,6 +12,8 @@ import type { ThemeConfig } from "@/types/theme";
 import { RestaurantMenuRenderer } from "@/components/renderers/restaurant-menu";
 import { BioLinkRenderer } from "@/components/renderers/bio-link";
 import { GoogleReviewRenderer } from "@/components/renderers/google-review";
+import { BrandBioRenderer } from "@/components/renderers/brand-bio";
+import { EventInvitationRenderer } from "@/components/renderers/event-invitation";
 
 // --- Sabitler ---
 
@@ -203,8 +205,20 @@ export default async function PublicPage({
           theme={themeConfig}
         />
       )}
+      {row.projectType === "brand_bio" && (
+        <BrandBioRenderer
+          content={content as Parameters<typeof BrandBioRenderer>[0]["content"]}
+          theme={themeConfig}
+        />
+      )}
+      {row.projectType === "event_invitation" && (
+        <EventInvitationRenderer
+          content={content as Parameters<typeof EventInvitationRenderer>[0]["content"]}
+          theme={themeConfig}
+        />
+      )}
       {/* Desteklenmeyen tip */}
-      {!["restaurant_menu", "bio_link", "google_review"].includes(
+      {!["restaurant_menu", "bio_link", "google_review", "brand_bio", "event_invitation"].includes(
         row.projectType
       ) && (
         <StatusPage

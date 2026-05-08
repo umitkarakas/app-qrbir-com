@@ -91,10 +91,13 @@ export async function POST(req: NextRequest) {
     writeFile(join(uploadsDir, thumbname), thumb),
   ]);
 
+  // Mutlak URL — subdomainlerde de çalışması için (m.qrbir.com, r.qrbir.com, vb.)
+  const appUrl = (process.env.BETTER_AUTH_URL ?? "https://app.qrbir.com").replace(/\/$/, "");
+
   return NextResponse.json({
     ok: true,
-    url: `/uploads/${filename}`,
-    thumbUrl: `/uploads/${thumbname}`,
+    url: `${appUrl}/uploads/${filename}`,
+    thumbUrl: `${appUrl}/uploads/${thumbname}`,
     size: processed.length,
   });
 }

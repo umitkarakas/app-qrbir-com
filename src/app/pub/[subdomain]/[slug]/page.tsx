@@ -7,6 +7,7 @@ import { projects, projectContents, themes } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 import { migrateContent } from "@/lib/content-migrator";
 import { getSchemaModule } from "@/schemas";
+import { applyFreeLimits } from "@/lib/plan-limits";
 import type { ThemeConfig } from "@/types/theme";
 
 import { RestaurantMenuRenderer } from "@/components/renderers/restaurant-menu";
@@ -97,6 +98,7 @@ const getPublicProject = cache(async (subdomain: string, slug: string) => {
       subdomainType: projects.subdomainType,
       status: projects.status,
       isFree: projects.isFree,
+      isPremium: projects.isPremium,
       themeConfig: themes.themeConfigJson,
       contentJson: projectContents.contentJson,
       schemaVersion: projectContents.schemaVersion,
@@ -177,7 +179,13 @@ export default async function PublicPage({
       row.contentJson as Record<string, unknown>,
       row.schemaVersion ?? 1
     );
-    content = result.data;
+    // Free plan limitlerini uygula (premium projelerde kırpma yapılmaz)
+    const { content: limited } = applyFreeLimits(
+      row.projectType,
+      result.data,
+      row.isPremium
+    );
+    content = limited;
   } else {
     content = mod?.defaultContent ?? {};
   }

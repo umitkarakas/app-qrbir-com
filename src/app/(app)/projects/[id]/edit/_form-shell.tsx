@@ -108,8 +108,15 @@ export function useSaver(projectId: number) {
       return false;
     }
 
-    setMessage("Kaydedildi ✓");
-    setTimeout(() => setMessage(""), 2500);
+    const data = await res.json().catch(() => ({}));
+
+    // Free plan uyarıları varsa göster
+    if (data.warnings?.length) {
+      setMessage(`Kaydedildi ✓  ⚠️ ${data.warnings[0]}`);
+    } else {
+      setMessage("Kaydedildi ✓");
+    }
+    setTimeout(() => setMessage(""), 5000);
     return true;
   }
 

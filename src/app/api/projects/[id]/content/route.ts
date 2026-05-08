@@ -7,6 +7,7 @@ import { headers } from "next/headers";
 import { getSchemaModule } from "@/schemas";
 import { migrateContent } from "@/lib/content-migrator";
 import { revalidatePath } from "next/cache";
+import { checkFreeLimitWarnings } from "@/lib/plan-limits";
 
 async function loadProject(projectId: number, userId: string) {
   const [project] = await db
@@ -148,8 +149,16 @@ export async function PUT(
   // On-demand revalidation: pub sayfasını cache'ten temizle
   revalidatePath(`/pub/${project.subdomainType}/${project.slug}`);
 
+  // Free limit uyarıları (kaydetmeyi engellemez, sadece bildirir)
+  const warnings = checkFreeLimitWarnings(
+    project.projectType,
+    parsed.data,
+    project.isPremium
+  );
+
   return NextResponse.json({
     content: parsed.data,
     schemaVersion: mod.CURRENT_VERSION,
+    warnings: warnings.length > 0 ? warnings : undefined,
   });
 }

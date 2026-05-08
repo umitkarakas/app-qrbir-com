@@ -47,3 +47,4 @@ qrbir_proje_plani.md
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+.claude/

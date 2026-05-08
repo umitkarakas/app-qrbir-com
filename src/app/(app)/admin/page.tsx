@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { AdminStatusSelect } from "./admin-status-select";
 import { SendApprovalButton } from "./send-approval-button";
+import { ActivateButton } from "./activate-button";
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "").split(",").map((e) => e.trim()).filter(Boolean);
 
@@ -225,8 +226,11 @@ export default async function AdminPage() {
                         year: "2-digit",
                       })}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 space-y-1">
                       <SendApprovalButton projectId={project.id} />
+                      {(project.status === "payment_pending" || project.status === "approved" || project.status === "paid") && (
+                        <ActivateButton projectId={project.id} />
+                      )}
                     </td>
                   </tr>
                 ))}

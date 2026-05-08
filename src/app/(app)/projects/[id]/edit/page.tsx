@@ -14,6 +14,7 @@ import BrandBioForm from "./brand-bio-form";
 import EventInvitationForm from "./event-invitation-form";
 import { StudioRequestButton } from "./studio-request-button";
 import { PublishBar } from "./publish-bar";
+import { CheckoutButton } from "./checkout-button";
 import { QrPanel } from "./qr-panel";
 import { SlugEditor } from "./slug-editor";
 import { TitleEditor } from "./title-editor";
@@ -151,6 +152,27 @@ export default async function EditPage({
           subdomainType={row.subdomainType}
           slug={row.slug}
         />
+
+        {/* Ödemeye geç — approved veya payment_pending durumunda */}
+        {(row.status === "approved" || row.status === "payment_pending") && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 mb-6 flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold text-amber-800">
+                {row.status === "approved"
+                  ? "✅ Projeniz onaylandı — ödeme ile yayına alabilirsiniz"
+                  : "🕐 Ödeme bekleniyor"}
+              </p>
+              <p className="text-xs text-amber-600 mt-0.5">
+                Ödeme tamamlandıktan sonra projeniz otomatik olarak yayına alınacak.
+              </p>
+            </div>
+            <CheckoutButton
+              projectId={row.id}
+              orderType="digital_plan"
+              label="Ödemeye Geç →"
+            />
+          </div>
+        )}
 
         {/* Studio talebi — yayına geçmeden önce profesyonel hazırlık */}
         <StudioRequestButton

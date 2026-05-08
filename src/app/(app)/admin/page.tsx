@@ -1,0 +1,186 @@
+import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { projects, themes } from "@/db/schema";
+import { eq, desc } from "drizzle-orm";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import Link from "next/link";
+import { AdminStatusSelect } from "./admin-status-select";
+
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "").split(",").map((e) => e.trim()).filter(Boolean);
+
+const STATUS_LABELS: Record<string, string> = {
+  draft: "Taslak",
+  info_missing: "Bilgi Eksik",
+  studio_pending: "Stüdyo Bekliyor",
+  in_design: "Tasarımda",
+  preview_ready: "Önizleme Hazır",
+  customer_revision: "Revizyon Bekliyor",
+  approved: "Onaylandı",
+  payment_pending: "Ödeme Bekliyor",
+  paid: "Ödendi",
+  published: "Yayında",
+  paused: "Duraklatıldı",
+  expired: "Süresi Doldu",
+  cancelled: "İptal Edildi",
+};
+
+const STATUS_COLORS: Record<string, string> = {
+  draft: "bg-gray-100 text-gray-600",
+  info_missing: "bg-yellow-50 text-yellow-700",
+  studio_pending: "bg-blue-50 text-blue-700",
+  in_design: "bg-purple-50 text-purple-700",
+  preview_ready: "bg-indigo-50 text-indigo-700",
+  customer_revision: "bg-orange-50 text-orange-700",
+  approved: "bg-teal-50 text-teal-700",
+  payment_pending: "bg-amber-50 text-amber-700",
+  paid: "bg-green-50 text-green-700",
+  published: "bg-green-100 text-green-800",
+  paused: "bg-gray-100 text-gray-500",
+  expired: "bg-red-50 text-red-600",
+  cancelled: "bg-red-50 text-red-400",
+};
+
+const PROJECT_TYPE_LABELS: Record<string, string> = {
+  restaurant_menu: "Restoran Menüsü",
+  bio_link: "Bio Link",
+  brand_bio: "Marka Bio",
+  google_review: "Google Yorum",
+  event_invitation: "Etkinlik Daveti",
+  campaign_link: "Kampanya Linki",
+};
+
+export default async function AdminPage() {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) redirect("/login");
+
+  // Admin kontrolü
+  if (!ADMIN_EMAILS.includes(session.user.email ?? "")) {
+    redirect("/dashboard");
+  }
+
+  const allProjects = await db
+    .select({
+      id: projects.id,
+      title: projects.title,
+      slug: projects.slug,
+      projectType: projects.projectType,
+      subdomainType: projects.subdomainType,
+      status: projects.status,
+      userId: projects.userId,
+      createdAt: projects.createdAt,
+      updatedAt: projects.updatedAt,
+      themeName: themes.name,
+    })
+    .from(projects)
+    .leftJoin(themes, eq(projects.themeId, themes.id))
+    .orderBy(desc(projects.createdAt));
+
+  const statusCounts = allProjects.reduce<Record<string, number>>((acc, p) => {
+    acc[p.status] = (acc[p.status] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-6xl mx-auto px-4 py-10">
+
+        {/* Başlık */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Admin Paneli</h1>
+            <p className="text-gray-500 text-sm mt-1">
+              Toplam {allProjects.length} proje
+            </p>
+          </div>
+          <Link
+            href="/dashboard"
+            className="text-sm text-gray-500 hover:text-gray-700 px-3 py-2"
+          >
+            ← Panele Dön
+          </Link>
+        </div>
+
+        {/* Özet istatistikler */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+          {(["published", "draft", "in_design", "payment_pending"] as const).map(
+            (s) => (
+              <div
+                key={s}
+                className="bg-white rounded-xl border border-gray-200 px-4 py-3"
+              >
+                <div className="text-2xl font-bold text-gray-900">
+                  {statusCounts[s] ?? 0}
+                </div>
+                <div className="text-xs text-gray-500 mt-0.5">
+                  {STATUS_LABELS[s]}
+                </div>
+              </div>
+            )
+          )}
+        </div>
+
+        {/* Proje tablosu */}
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-100 bg-gray-50">
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 w-8">#</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500">Proje</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500">Tür</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500">URL</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500">Durum</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500">Tarih</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {allProjects.map((project) => (
+                  <tr key={project.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-3 text-xs text-gray-400">{project.id}</td>
+                    <td className="px-4 py-3">
+                      <div className="font-medium text-gray-900 truncate max-w-[180px]">
+                        {project.title}
+                      </div>
+                      {project.themeName && (
+                        <div className="text-xs text-gray-400">🎨 {project.themeName}</div>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">
+                      {PROJECT_TYPE_LABELS[project.projectType] ?? project.projectType}
+                    </td>
+                    <td className="px-4 py-3">
+                      <a
+                        href={`https://${project.subdomainType}.qrbir.com/${project.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs font-mono text-blue-600 hover:underline"
+                      >
+                        {project.subdomainType}.qrbir.com/{project.slug}
+                      </a>
+                    </td>
+                    <td className="px-4 py-3">
+                      <AdminStatusSelect
+                        projectId={project.id}
+                        currentStatus={project.status}
+                        statusLabels={STATUS_LABELS}
+                        statusColors={STATUS_COLORS}
+                      />
+                    </td>
+                    <td className="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">
+                      {new Date(project.createdAt).toLocaleDateString("tr-TR", {
+                        day: "numeric",
+                        month: "short",
+                        year: "2-digit",
+                      })}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

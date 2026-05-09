@@ -8,14 +8,42 @@ import {
   User,
   ShieldCheck,
   LogOut,
+  Layers,
+  FolderKanban,
+  ClipboardList,
+  ChevronDown,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 const NAV = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/new", label: "Yeni Proje", icon: PlusCircle },
   { href: "/account", label: "Hesabım", icon: User },
+];
+
+const ADMIN_NAV = [
+  {
+    label: "Projeler",
+    href: "/admin",
+    icon: FolderKanban,
+    exact: true,
+  },
+  {
+    label: "Temalar",
+    icon: Layers,
+    children: [
+      { href: "/admin/themes", label: "Tüm Temalar" },
+      { href: "/admin/themes/new", label: "Yeni Tema" },
+    ],
+  },
+  {
+    label: "Audit Log",
+    href: "/admin/audit",
+    icon: ClipboardList,
+    exact: false,
+  },
 ];
 
 interface AppSidebarProps {
@@ -27,6 +55,20 @@ interface AppSidebarProps {
 export function AppSidebar({ isAdmin, userName, userEmail }: AppSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const isAdminArea = pathname.startsWith("/admin");
+  const [adminOpen, setAdminOpen] = useState(isAdminArea);
+
+  // Track which submenu groups are open
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
+    const defaults: Record<string, boolean> = {};
+    ADMIN_NAV.forEach((item) => {
+      if ("children" in item && item.children) {
+        const anyActive = item.children.some((c) => pathname.startsWith(c.href));
+        defaults[item.label] = anyActive;
+      }
+    });
+    return defaults;
+  });
 
   async function handleLogout() {
     await authClient.signOut();
@@ -111,33 +153,165 @@ export function AppSidebar({ isAdmin, userName, userEmail }: AppSidebarProps) {
         })}
 
         {isAdmin && (
-          <Link
-            href="/admin"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              height: 48,
-              padding: "0 16px",
-              borderRadius: "var(--radius-control)",
-              color: pathname.startsWith("/admin") ? "var(--color-fg-1)" : "var(--color-fg-2)",
-              fontWeight: 500,
-              fontSize: 14,
-              textDecoration: "none",
-              background: pathname.startsWith("/admin") ? "var(--gradient-active-nav)" : "transparent",
-              boxShadow: pathname.startsWith("/admin") ? "var(--shadow-nav-active)" : "none",
-              transition: "all var(--duration-base) var(--easing-base)",
-            }}
-          >
-            <ShieldCheck
-              size={20}
+          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            {/* Admin section header */}
+            <button
+              onClick={() => setAdminOpen((v) => !v)}
               style={{
-                color: pathname.startsWith("/admin") ? "var(--color-accent-violet-deep)" : "var(--color-fg-3)",
-                flexShrink: 0,
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                height: 44,
+                padding: "0 16px",
+                borderRadius: "var(--radius-control)",
+                color: isAdminArea ? "var(--color-fg-1)" : "var(--color-fg-2)",
+                fontWeight: 600,
+                fontSize: 13,
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                width: "100%",
+                fontFamily: "inherit",
+                transition: "all var(--duration-base) var(--easing-base)",
               }}
-            />
-            Admin
-          </Link>
+            >
+              <ShieldCheck
+                size={18}
+                style={{
+                  color: isAdminArea ? "var(--color-accent-violet-deep)" : "var(--color-fg-3)",
+                  flexShrink: 0,
+                }}
+              />
+              <span style={{ flex: 1, textAlign: "left", letterSpacing: "0.04em", textTransform: "uppercase", fontSize: 11 }}>Admin</span>
+              <ChevronDown
+                size={14}
+                style={{
+                  color: "var(--color-fg-4)",
+                  transition: "transform 0.2s",
+                  transform: adminOpen ? "rotate(180deg)" : "rotate(0deg)",
+                }}
+              />
+            </button>
+
+            {/* Admin submenu */}
+            {adminOpen && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 2, paddingLeft: 12 }}>
+                {ADMIN_NAV.map((item) => {
+                  if ("children" in item && item.children) {
+                    const groupOpen = openGroups[item.label] ?? false;
+                    const anyChildActive = item.children.some((c) => pathname.startsWith(c.href));
+                    const GroupIcon = item.icon;
+                    return (
+                      <div key={item.label}>
+                        <button
+                          onClick={() =>
+                            setOpenGroups((prev) => ({ ...prev, [item.label]: !prev[item.label] }))
+                          }
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
+                            height: 40,
+                            padding: "0 12px",
+                            borderRadius: "var(--radius-control)",
+                            color: anyChildActive ? "var(--color-fg-1)" : "var(--color-fg-2)",
+                            fontWeight: 500,
+                            fontSize: 13,
+                            background: anyChildActive ? "rgba(124,109,255,0.08)" : "transparent",
+                            border: "none",
+                            cursor: "pointer",
+                            width: "100%",
+                            fontFamily: "inherit",
+                            transition: "background var(--duration-base)",
+                          }}
+                        >
+                          <GroupIcon
+                            size={16}
+                            style={{
+                              color: anyChildActive ? "var(--color-accent-violet-deep)" : "var(--color-fg-3)",
+                              flexShrink: 0,
+                            }}
+                          />
+                          <span style={{ flex: 1, textAlign: "left" }}>{item.label}</span>
+                          <ChevronDown
+                            size={12}
+                            style={{
+                              color: "var(--color-fg-4)",
+                              transition: "transform 0.2s",
+                              transform: groupOpen ? "rotate(180deg)" : "rotate(0deg)",
+                            }}
+                          />
+                        </button>
+                        {groupOpen && (
+                          <div style={{ display: "flex", flexDirection: "column", gap: 1, paddingLeft: 26, marginTop: 2 }}>
+                            {item.children.map((child) => {
+                              const childActive = pathname === child.href || pathname.startsWith(child.href + "/");
+                              return (
+                                <Link
+                                  key={child.href}
+                                  href={child.href}
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    height: 34,
+                                    padding: "0 10px",
+                                    borderRadius: 8,
+                                    fontSize: 12,
+                                    fontWeight: childActive ? 600 : 400,
+                                    color: childActive ? "var(--color-accent-violet-deep)" : "var(--color-fg-2)",
+                                    textDecoration: "none",
+                                    background: childActive ? "rgba(124,109,255,0.1)" : "transparent",
+                                    transition: "background var(--duration-base)",
+                                  }}
+                                >
+                                  {child.label}
+                                </Link>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+
+                  // Flat item
+                  const FlatIcon = item.icon;
+                  const flatActive = item.exact
+                    ? pathname === item.href
+                    : pathname.startsWith(item.href!);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href!}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        height: 40,
+                        padding: "0 12px",
+                        borderRadius: "var(--radius-control)",
+                        color: flatActive ? "var(--color-fg-1)" : "var(--color-fg-2)",
+                        fontWeight: 500,
+                        fontSize: 13,
+                        textDecoration: "none",
+                        background: flatActive ? "rgba(124,109,255,0.08)" : "transparent",
+                        transition: "background var(--duration-base)",
+                      }}
+                    >
+                      <FlatIcon
+                        size={16}
+                        style={{
+                          color: flatActive ? "var(--color-accent-violet-deep)" : "var(--color-fg-3)",
+                          flexShrink: 0,
+                        }}
+                      />
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         )}
       </nav>
 

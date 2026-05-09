@@ -11,7 +11,7 @@ import { ThemeEditorClient } from "./theme-editor-client";
 import { LegacyThemeActions } from "./legacy-theme-actions";
 import type { ThemeConfig } from "@/types/theme";
 import type { StoredThemeConfig } from "@/lib/theme-editor/contract";
-import type { ProjectType } from "@/db/schema/projects";
+import type { ProjectType } from "@/lib/theme-editor/contract";
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "")
   .split(",")

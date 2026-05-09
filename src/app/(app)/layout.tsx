@@ -3,6 +3,11 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "")
+  .split(",")
+  .map((e) => e.trim())
+  .filter(Boolean);
+
 export default async function AppLayout({
   children,
 }: {
@@ -11,7 +16,7 @@ export default async function AppLayout({
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) redirect("/login");
 
-  const isAdmin = (session.user as { role?: string }).role === "admin";
+  const isAdmin = ADMIN_EMAILS.includes(session.user.email ?? "");
 
   return (
     <div className="lum-app-layout">

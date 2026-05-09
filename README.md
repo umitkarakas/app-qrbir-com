@@ -1,36 +1,102 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# QRbir — app.qrbir.com
 
-## Getting Started
+QRbir, işletmelerin QR kod bağlantılı dijital arayüzler (restoran menüsü, bio link, Google yorum, etkinlik daveti, campaign link) oluşturmasını sağlayan SaaS platformudur.
 
-First, run the development server:
+## Stack
+
+- **Framework:** Next.js 15 (App Router, Turbopack)
+- **Dil:** TypeScript 5
+- **Veritabanı:** PostgreSQL + Drizzle ORM
+- **Auth:** better-auth
+- **E-posta:** Resend
+- **QR Üretim:** qrcode
+- **Görsel İşleme:** Sharp
+- **Stil:** Tailwind CSS 4
+
+## Geliştirme Kurulumu
 
 ```bash
+# 1. Bağımlılıkları yükle
+npm install
+
+# 2. Env dosyasını oluştur
+cp .env.example .env
+# .env içindeki değerleri doldur
+
+# 3. Veritabanı migration'ı çalıştır
+npm run db:migrate
+
+# 4. Geliştirme sunucusunu başlat
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Uygulama `http://localhost:3000` adresinde açılır.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Gerekli Ortam Değişkenleri
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Tüm değişkenler `.env.example` dosyasında açıklamalarıyla birlikte listelenmiştir.
 
-## Learn More
+| Değişken | Açıklama |
+|---|---|
+| `DATABASE_URL` | PostgreSQL bağlantı dizesi |
+| `BETTER_AUTH_URL` | Auth ve cookie domain URL'i |
+| `RESEND_API_KEY` | E-posta gönderimi (Resend) |
+| `WC_WEBHOOK_SECRET` | WooCommerce webhook HMAC doğrulama |
+| `ADMIN_EMAILS` | Admin paneli erişim listesi (virgülle ayrılmış) |
+| `CRON_SECRET` | Cron endpoint güvenliği |
 
-To learn more about Next.js, take a look at the following resources:
+## Komutlar
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Komut | Açıklama |
+|---|---|
+| `npm run dev` | Geliştirme sunucusu (Turbopack) |
+| `npm run build` | Production build |
+| `npm run lint` | ESLint kontrolü |
+| `npm run db:generate` | Drizzle migration dosyası oluştur |
+| `npm run db:migrate` | Migration'ları uygula |
+| `npm run db:studio` | Drizzle Studio (DB arayüzü) |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Uygulama Yapısı
 
-## Deploy on Vercel
+```
+src/
+├── app/
+│   ├── (app)/        # Oturum gerektiren sayfalar (dashboard, admin, projeler)
+│   ├── (auth)/       # Giriş / kayıt sayfaları
+│   ├── api/          # API route'ları
+│   │   ├── projects/ # Proje CRUD
+│   │   ├── upload/   # Dosya yükleme
+│   │   ├── webhooks/ # WooCommerce webhook
+│   │   └── cron/     # Zamanlı temizleme işleri
+│   └── pub/          # Public QR sayfaları ([subdomain]/[slug])
+├── db/schema/        # Drizzle ORM şemaları
+├── lib/              # Auth, DB, mailer, payment, plan-limits
+└── schemas/          # İçerik tipi şemaları (versiyonlu)
+    ├── restaurant_menu/
+    ├── bio_link/
+    ├── brand_bio/
+    ├── google_review/
+    ├── event_invitation/
+    └── campaign_link/
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Subdomain Yönlendirme
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Public sayfalar host'a göre render edilir:
+
+| Subdomain | İçerik Tipi |
+|---|---|
+| `m.qrbir.com` | Restoran Menü |
+| `b.qrbir.com` | Bio Link / Marka Bio |
+| `r.qrbir.com` | Google Yorum |
+| `e.qrbir.com` | Etkinlik / Davetiye |
+
+## Deployment
+
+Uygulama Docker container olarak deploy edilir:
+
+```bash
+docker build -t app-qrbir-com .
+```
+
+`next.config.ts` → `output: "standalone"` ile yapılandırılmıştır.

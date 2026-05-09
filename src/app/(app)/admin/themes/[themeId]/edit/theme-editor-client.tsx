@@ -1,8 +1,9 @@
 "use client";
 
-import { useReducer, useCallback, useState } from "react";
-import type { ThemeTemplate, EditorField } from "@/lib/theme-editor/contract";
+import { useReducer, useCallback, useState, useEffect } from "react";
+import type { EditorSchema, EditorField } from "@/lib/theme-editor/contract";
 import type { ThemeConfig } from "@/types/theme";
+import { loadTemplateRender, type RenderFn } from "@/lib/theme-editor/client-templates";
 
 // ─── Config Reducer ───────────────────────────────────────────────────────────
 
@@ -159,25 +160,40 @@ function FieldControl({
 
 type Props = {
   themeId: number;
+  templateId: string;
+  templateName: string;
   initialName: string;
   initialStatus: string;
   initialConfig: ThemeConfig;
-  template: ThemeTemplate;
+  defaultConfig: ThemeConfig;
+  editorSchema: EditorSchema;
+  baseWidth: number;
   demoContent: unknown;
 };
 
 export function ThemeEditorClient({
   themeId,
+  templateId,
+  templateName,
   initialName,
   initialStatus,
   initialConfig,
-  template,
+  defaultConfig,
+  editorSchema,
+  baseWidth,
   demoContent,
 }: Props) {
   const [config, dispatch] = useReducer(configReducer, initialConfig);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [activating, setActivating] = useState(false);
+  const [renderFn, setRenderFn] = useState<RenderFn | null>(null);
+
+  useEffect(() => {
+    loadTemplateRender(templateId).then((fn) => {
+      if (fn) setRenderFn(() => fn);
+    });
+  }, [templateId]);
 
   const handleSave = useCallback(async () => {
     setSaving(true);
@@ -186,14 +202,14 @@ export function ThemeEditorClient({
       await fetch(`/api/admin/themes/${themeId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ themeConfigJson: config }),
+        body: JSON.stringify({ themeConfigJson: { ...config, templateId, templateVersion: 1 } }),
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } finally {
       setSaving(false);
     }
-  }, [themeId, config]);
+  }, [themeId, config, templateId]);
 
   const handleActivate = useCallback(async () => {
     setActivating(true);
@@ -212,8 +228,8 @@ export function ThemeEditorClient({
   }, [themeId, initialStatus]);
 
   const handleReset = useCallback(() => {
-    dispatch({ type: "RESET", config: template.defaultConfig });
-  }, [template.defaultConfig]);
+    dispatch({ type: "RESET", config: defaultConfig });
+  }, [defaultConfig]);
 
   return (
     <div className="flex flex-col h-screen bg-gray-100">
@@ -264,7 +280,7 @@ export function ThemeEditorClient({
         {/* Sol panel — kontroller */}
         <aside className="w-72 bg-white border-r border-gray-200 overflow-y-auto flex-shrink-0">
           <div className="p-4 space-y-6">
-            {template.editorSchema.sections.map((section) => (
+            {editorSchema.sections.map((section) => (
               <div key={section.label}>
                 <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
                   {section.label}
@@ -288,11 +304,11 @@ export function ThemeEditorClient({
         <main className="flex-1 overflow-auto flex items-start justify-center py-8 px-4">
           <div className="flex flex-col items-center gap-3">
             <div className="text-xs text-gray-400 font-medium">
-              {template.viewport.baseWidth}px — {template.name}
+              {baseWidth}px — {templateName}
             </div>
             <div
               style={{
-                width: template.viewport.baseWidth,
+                width: baseWidth,
                 minHeight: 667,
                 overflow: "hidden",
                 borderRadius: 24,
@@ -300,11 +316,13 @@ export function ThemeEditorClient({
                 background: "#fff",
               }}
             >
-              {template.render({
-                content: demoContent,
-                theme: config,
-                mode: "preview",
-              })}
+              {renderFn ? (
+                renderFn({ content: demoContent, theme: config, mode: "preview" })
+              ) : (
+                <div className="flex items-center justify-center h-full min-h-[400px] text-gray-300 text-sm">
+                  Yükleniyor…
+                </div>
+              )}
             </div>
           </div>
         </main>

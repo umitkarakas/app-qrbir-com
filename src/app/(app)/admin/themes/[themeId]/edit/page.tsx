@@ -129,10 +129,14 @@ export default async function ThemeEditPage({
   return (
     <ThemeEditorClient
       themeId={theme.id}
+      templateId={template.id}
+      templateName={template.name}
       initialName={theme.name}
       initialStatus={theme.status}
       initialConfig={initialConfig}
-      template={template}
+      defaultConfig={template.defaultConfig}
+      editorSchema={template.editorSchema}
+      baseWidth={template.viewport.baseWidth}
       demoContent={demoContent}
     />
   );

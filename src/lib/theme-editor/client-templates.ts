@@ -15,6 +15,11 @@ const LOADERS: Record<string, () => Promise<RenderFn>> = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (minimalDark as any).render as RenderFn;
   },
+  "restaurant-menu/dark-premium": async () => {
+    const { darkPremium } = await import("@/themes/restaurant-menu/templates/dark-premium");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (darkPremium as any).render as RenderFn;
+  },
 };
 
 export async function loadTemplateRender(id: string): Promise<RenderFn | undefined> {

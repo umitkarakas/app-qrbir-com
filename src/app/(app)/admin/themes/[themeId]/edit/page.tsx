@@ -7,6 +7,7 @@ import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { getTemplate, listTemplates } from "@/lib/theme-editor/registry";
 import { BIO_LINK_DEMO } from "@/themes/bio-link/fixtures";
+import { RESTAURANT_MENU_DEMO } from "@/themes/restaurant-menu/fixtures";
 import { ThemeEditorClient } from "./theme-editor-client";
 import { LegacyThemeActions } from "./legacy-theme-actions";
 import type { ThemeConfig } from "@/types/theme";
@@ -21,6 +22,7 @@ const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "")
 const DEMO_CONTENT: Record<string, unknown> = {
   bio_link: BIO_LINK_DEMO,
   brand_bio: BIO_LINK_DEMO,
+  restaurant_menu: RESTAURANT_MENU_DEMO,
 };
 
 const PRODUCT_TYPE_LABELS: Record<string, string> = {

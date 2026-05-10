@@ -1,7 +1,8 @@
 import type { ThemeTemplate, ProjectType } from "./contract";
 import { bioLinkTemplates } from "@/themes/bio-link";
+import { restaurantMenuTemplates } from "@/themes/restaurant-menu";
 
-const ALL_TEMPLATES: ThemeTemplate[] = [...bioLinkTemplates];
+const ALL_TEMPLATES: ThemeTemplate[] = [...bioLinkTemplates, ...restaurantMenuTemplates];
 
 export function listTemplates(productType?: ProjectType): ThemeTemplate[] {
   if (!productType) return ALL_TEMPLATES;

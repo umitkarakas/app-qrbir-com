@@ -10,6 +10,8 @@ import { BIO_LINK_DEMO } from "@/themes/bio-link/fixtures";
 import { RESTAURANT_MENU_DEMO } from "@/themes/restaurant-menu/fixtures";
 import type { ThemeConfig } from "@/types/theme";
 import type { StoredThemeConfig } from "@/lib/theme-editor/contract";
+import { BlockContentRenderer } from "@/features/block-editor/components/BlockContentRenderer";
+import { isBlockEditorContent } from "@/features/block-editor/types/content";
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "")
   .split(",")
@@ -72,16 +74,22 @@ export default async function ThemePreviewPage({
   }
 
   const demoContent = DEMO_CONTENT[theme.productType] ?? null;
-  const { templateId: _tid, templateVersion: _tv, ...config } = stored;
+  const editorContent = stored.editorContent;
+  const config = { ...stored } as Record<string, unknown>;
+  delete config.templateId;
+  delete config.templateVersion;
+  delete config.editorContent;
   const themeConfig: ThemeConfig = Object.keys(config).length
     ? (config as ThemeConfig)
     : template.defaultConfig;
 
-  const rendered = template.render({
-    content: demoContent,
-    theme: themeConfig,
-    mode: "public",
-  });
+  const rendered = isBlockEditorContent(editorContent)
+    ? <BlockContentRenderer content={editorContent} />
+    : template.render({
+        content: demoContent,
+        theme: themeConfig,
+        mode: "public",
+      });
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 0, minHeight: "calc(100vh - 48px)" }}>

@@ -1,5 +1,6 @@
 import type React from "react";
 import type { ThemeConfig } from "@/types/theme";
+import type { BlockEditorContent } from "@/features/block-editor/types/content";
 
 export type ProjectType =
   | "restaurant_menu"
@@ -79,4 +80,5 @@ export type ThemeTemplate<
 export type StoredThemeConfig = ThemeConfig & {
   templateId?: string;
   templateVersion?: number;
+  editorContent?: BlockEditorContent;
 };

@@ -55,6 +55,7 @@ type EditorProviderProps = {
   initialSite: Site;
   initialBlocks: Block[];
   themes?: Theme[];
+  onSaveContent?: (site: Site, blocks: Block[]) => Promise<void>;
   children: React.ReactNode;
 };
 
@@ -63,6 +64,7 @@ export function EditorProvider({
   initialSite,
   initialBlocks,
   themes = [],
+  onSaveContent,
   children,
 }: EditorProviderProps) {
   const [site, setSite] = useState<Site | null>(initialSite);
@@ -217,20 +219,24 @@ export function EditorProvider({
     if (!site || isSaving) return;
     setIsSaving(true);
     try {
-      const res = await fetch(`/api/projects/${projectId}/content`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: buildBlockEditorContent(site, blocks) }),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        throw new Error(data?.error ?? "Kaydetme başarısız");
+      if (onSaveContent) {
+        await onSaveContent(site, blocks);
+      } else {
+        const res = await fetch(`/api/projects/${projectId}/content`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: buildBlockEditorContent(site, blocks) }),
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => null);
+          throw new Error(data?.error ?? "Kaydetme başarısız");
+        }
       }
       setIsDirty(false);
     } finally {
       setIsSaving(false);
     }
-  }, [blocks, isSaving, projectId, site]);
+  }, [blocks, isSaving, onSaveContent, projectId, site]);
 
   const publish = useCallback(async () => save(), [save]);
   const unpublish = useCallback(async () => undefined, []);

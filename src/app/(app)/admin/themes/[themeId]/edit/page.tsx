@@ -13,6 +13,13 @@ import { LegacyThemeActions } from "./legacy-theme-actions";
 import type { ThemeConfig } from "@/types/theme";
 import type { StoredThemeConfig } from "@/lib/theme-editor/contract";
 import type { ProjectType } from "@/lib/theme-editor/contract";
+import {
+  createBlocksFromContent,
+  createEditorSite,
+  isBlockEditorContent,
+  type EditorProject,
+} from "@/features/block-editor/types/content";
+import type { Theme } from "@/features/block-editor/types/database";
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "")
   .split(",")
@@ -123,23 +130,49 @@ export default async function ThemeEditPage({
   const demoContent = DEMO_CONTENT[theme.productType] ?? null;
 
   // themeConfigJson'dan ThemeConfig alanlarını çıkar (templateId/templateVersion hariç)
-  const { templateId: _tid, templateVersion: _tv, ...config } = stored;
+  const editorContent = stored.editorContent;
+  const config = { ...stored } as Record<string, unknown>;
+  delete config.templateId;
+  delete config.templateVersion;
+  delete config.editorContent;
   const initialConfig: ThemeConfig = Object.keys(config).length
     ? (config as ThemeConfig)
     : template.defaultConfig;
+  const editorProject: EditorProject = {
+    id: theme.id,
+    title: theme.name,
+    slug: theme.slug,
+    projectType: theme.productType,
+    subdomainType: "m",
+    status: theme.status === "active" ? "published" : "draft",
+    viewCount: 0,
+    qrCount: 0,
+    themeName: theme.name,
+  };
+  const editorSource = isBlockEditorContent(editorContent) ? editorContent : demoContent;
+  const site = createEditorSite(editorProject, editorSource);
+  const blocks = createBlocksFromContent(editorProject, editorSource);
+  const blockThemes: Theme[] = [];
 
   return (
     <ThemeEditorClient
-      themeId={theme.id}
-      templateId={template.id}
-      templateName={template.name}
-      initialName={theme.name}
-      initialStatus={theme.status}
-      initialConfig={initialConfig}
-      defaultConfig={template.defaultConfig}
-      editorSchema={template.editorSchema}
-      baseWidth={template.viewport.baseWidth}
-      demoContent={demoContent}
+      theme={{
+        id: theme.id,
+        name: theme.name,
+        slug: theme.slug,
+        description: theme.description,
+        status: theme.status,
+        productType: theme.productType,
+        isFree: theme.isFree,
+        isPremium: theme.isPremium,
+        previewImageUrl: theme.previewImageUrl,
+        templateId: template.id,
+        templateVersion: template.version,
+      }}
+      site={site}
+      blocks={blocks}
+      themes={blockThemes}
+      baseConfig={initialConfig}
     />
   );
 }

@@ -8,6 +8,7 @@ import { getSchemaModule } from "@/schemas";
 import { migrateContent } from "@/lib/content-migrator";
 import { revalidatePath } from "next/cache";
 import { checkFreeLimitWarnings } from "@/lib/plan-limits";
+import { isBlockEditorContent } from "@/features/block-editor/types/content";
 
 async function loadProject(projectId: number, userId: string) {
   const [project] = await db
@@ -104,7 +105,10 @@ export async function PUT(
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const parsed = mod.schema.safeParse(body.content);
+  const parsed = isBlockEditorContent(body.content)
+    ? { success: true as const, data: body.content }
+    : mod.schema.safeParse(body.content);
+
   if (!parsed.success) {
     return NextResponse.json(
       {

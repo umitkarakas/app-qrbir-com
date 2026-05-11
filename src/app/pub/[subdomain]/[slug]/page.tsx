@@ -18,6 +18,8 @@ import { BrandBioRenderer } from "@/components/renderers/brand-bio";
 import { EventInvitationRenderer } from "@/components/renderers/event-invitation";
 import { CampaignLinkRenderer } from "@/components/renderers/campaign-link";
 import { ViewTracker } from "@/components/view-tracker";
+import { BlockContentRenderer } from "@/features/block-editor/components/BlockContentRenderer";
+import { isBlockEditorContent } from "@/features/block-editor/types/content";
 
 // --- Sabitler ---
 
@@ -172,7 +174,7 @@ export default async function PublicPage({
   }
 
   // Campaign link — server-side redirect (daha hızlı, flash yok)
-  if (row.projectType === "campaign_link") {
+  if (row.projectType === "campaign_link" && !isBlockEditorContent(row.contentJson)) {
     const rawData = (row.contentJson as Record<string, unknown>) ?? {};
     const targetUrl = rawData.url as string | undefined;
     if (targetUrl) {
@@ -225,37 +227,40 @@ export default async function PublicPage({
       <ViewTracker projectId={row.id} src={trackSrc} />
 
       {/* Renderer */}
-      {row.projectType === "restaurant_menu" && (
+      {isBlockEditorContent(content) && (
+        <BlockContentRenderer content={content} />
+      )}
+      {!isBlockEditorContent(content) && row.projectType === "restaurant_menu" && (
         <RestaurantMenuRenderer
           content={content as Parameters<typeof RestaurantMenuRenderer>[0]["content"]}
           theme={themeConfig}
         />
       )}
-      {row.projectType === "bio_link" && (
+      {!isBlockEditorContent(content) && row.projectType === "bio_link" && (
         <BioLinkRenderer
           content={content as Parameters<typeof BioLinkRenderer>[0]["content"]}
           theme={themeConfig}
         />
       )}
-      {row.projectType === "google_review" && (
+      {!isBlockEditorContent(content) && row.projectType === "google_review" && (
         <GoogleReviewRenderer
           content={content as Parameters<typeof GoogleReviewRenderer>[0]["content"]}
           theme={themeConfig}
         />
       )}
-      {row.projectType === "brand_bio" && (
+      {!isBlockEditorContent(content) && row.projectType === "brand_bio" && (
         <BrandBioRenderer
           content={content as Parameters<typeof BrandBioRenderer>[0]["content"]}
           theme={themeConfig}
         />
       )}
-      {row.projectType === "event_invitation" && (
+      {!isBlockEditorContent(content) && row.projectType === "event_invitation" && (
         <EventInvitationRenderer
           content={content as Parameters<typeof EventInvitationRenderer>[0]["content"]}
           theme={themeConfig}
         />
       )}
-      {row.projectType === "campaign_link" && (
+      {!isBlockEditorContent(content) && row.projectType === "campaign_link" && (
         <CampaignLinkRenderer
           content={content as Parameters<typeof CampaignLinkRenderer>[0]["content"]}
         />

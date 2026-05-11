@@ -1,4 +1,5 @@
 import { getSchemaModule } from "@/schemas";
+import { isBlockEditorContent } from "@/features/block-editor/types/content";
 
 export type MigrationResult = {
   data: unknown;
@@ -17,6 +18,14 @@ export function migrateContent(
   rawData: unknown,
   fromVersion: number
 ): MigrationResult {
+  if (isBlockEditorContent(rawData)) {
+    return {
+      data: rawData,
+      schemaVersion: fromVersion,
+      migrated: false,
+    };
+  }
+
   const mod = getSchemaModule(projectType);
   if (!mod) {
     throw new Error(`Bilinmeyen project_type: ${projectType}`);

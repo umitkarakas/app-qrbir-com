@@ -1,6 +1,6 @@
 "use client";
 
-import { useReducer, useCallback, useState, useEffect } from "react";
+import { useReducer, useCallback, useState, useEffect, useMemo } from "react";
 import type { EditorSchema, EditorField } from "@/lib/theme-editor/contract";
 import type { ThemeConfig } from "@/types/theme";
 import { loadTemplateRender, type RenderFn } from "@/lib/theme-editor/client-templates";
@@ -186,8 +186,14 @@ export function ThemeEditorClient({
   const [config, dispatch] = useReducer(configReducer, initialConfig);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [dirty, setDirty] = useState(false);
   const [activating, setActivating] = useState(false);
   const [renderFn, setRenderFn] = useState<RenderFn | null>(null);
+
+  const editorDispatch = useCallback((action: ConfigAction) => {
+    setDirty(true);
+    dispatch(action);
+  }, []);
 
   useEffect(() => {
     loadTemplateRender(templateId).then((fn) => {
@@ -204,6 +210,7 @@ export function ThemeEditorClient({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ themeConfigJson: { ...config, templateId, templateVersion: 1 } }),
       });
+      setDirty(false);
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } finally {
@@ -229,12 +236,16 @@ export function ThemeEditorClient({
 
   const handleReset = useCallback(() => {
     dispatch({ type: "RESET", config: defaultConfig });
+    setDirty(true);
   }, [defaultConfig]);
 
+  const previewLabel = useMemo(() => {
+    return `${baseWidth}px — ${templateName}`;
+  }, [baseWidth, templateName]);
+
   return (
-    <div className="flex flex-col h-screen bg-gray-100">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between flex-shrink-0">
+    <div className="flex flex-col min-h-[calc(100vh-48px)] bg-[#f5f6f9] -m-6">
+      <header className="bg-white/95 border-b border-gray-200 px-4 py-3 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-3">
           <a href="/admin/themes" className="text-gray-400 hover:text-gray-600 text-sm">
             ← Temalar
@@ -246,11 +257,14 @@ export function ThemeEditorClient({
           }`}>
             {initialStatus === "active" ? "Aktif" : "Taslak"}
           </span>
+          {dirty && (
+            <span className="text-xs font-medium text-amber-600">Kaydedilmemiş değişiklik</span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={handleReset}
-            className="px-3 py-1.5 text-sm text-gray-500 hover:text-gray-700 border border-gray-200 rounded-lg transition-colors"
+            className="px-3 py-1.5 text-sm text-gray-500 hover:text-gray-700 border border-gray-200 rounded-lg transition-colors bg-white"
           >
             Sıfırla
           </button>
@@ -275,11 +289,9 @@ export function ThemeEditorClient({
         </div>
       </header>
 
-      {/* Body */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Sol panel — kontroller */}
-        <aside className="w-72 bg-white border-r border-gray-200 overflow-y-auto flex-shrink-0">
-          <div className="p-4 space-y-6">
+        <aside className="w-[270px] bg-white border-r border-gray-200 overflow-y-auto flex-shrink-0">
+          <div className="px-4 py-5 space-y-7">
             {editorSchema.sections.map((section) => (
               <div key={section.label}>
                 <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
@@ -291,7 +303,7 @@ export function ThemeEditorClient({
                       key={field.key}
                       field={field}
                       config={config}
-                      dispatch={dispatch}
+                      dispatch={editorDispatch}
                     />
                   ))}
                 </div>
@@ -300,19 +312,18 @@ export function ThemeEditorClient({
           </div>
         </aside>
 
-        {/* Sağ panel — preview */}
-        <main className="flex-1 overflow-auto flex items-start justify-center py-8 px-4">
-          <div className="flex flex-col items-center gap-3">
+        <main className="flex-1 overflow-auto flex items-start justify-center py-8 px-4 bg-[radial-gradient(circle_at_52%_86%,rgba(245,158,11,0.12),transparent_24%),radial-gradient(circle_at_88%_14%,rgba(14,165,233,0.12),transparent_26%)]">
+          <div className="flex flex-col items-center gap-3 min-h-full">
             <div className="text-xs text-gray-400 font-medium">
-              {baseWidth}px — {templateName}
+              {previewLabel}
             </div>
             <div
               style={{
                 width: baseWidth,
                 minHeight: 667,
                 overflow: "hidden",
-                borderRadius: 24,
-                boxShadow: "0 20px 60px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.08)",
+                borderRadius: 28,
+                boxShadow: "0 22px 80px rgba(15,23,42,0.22), 0 0 0 1px rgba(15,23,42,0.08)",
                 background: "#fff",
               }}
             >

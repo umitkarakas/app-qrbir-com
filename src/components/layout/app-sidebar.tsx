@@ -31,11 +31,13 @@ const ADMIN_NAV = [
     exact: true,
   },
   {
-    label: "Temalar",
+    label: "Tasarım",
     icon: Layers,
     children: [
-      { href: "/admin/themes", label: "Tüm Temalar" },
-      { href: "/admin/themes/new", label: "Yeni Tema" },
+      { href: "/admin/blocks", label: "Bloklar" },
+      { href: "/admin/templates", label: "Şablonlar" },
+      { href: "/admin/themes", label: "Tasarımlar" },
+      { href: "/admin/themes/new", label: "Yeni Tasarım" },
     ],
   },
   {

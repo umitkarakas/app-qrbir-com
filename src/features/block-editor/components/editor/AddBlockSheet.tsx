@@ -1,8 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { X, Search, Sparkles, LayoutGrid, UtensilsCrossed, Calendar } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { useEditor } from '../../contexts/EditorContext';
 import { BLOCK_DEFINITIONS } from '../../config/constants';
+import { isBlockTypeRegistered } from '../../config/blockRegistry';
 import type { BlockType } from '../../types/blocks';
 
 interface AddBlockSheetProps {
@@ -20,6 +21,16 @@ interface BlockTypeData {
   allowed_site_types: string[];
 }
 
+interface ApiBlockTypeData {
+  blockType: string;
+  name: string;
+  description: string | null;
+  icon: string;
+  category: 'common' | 'menu' | 'invitation' | 'bio_link';
+  isPro: boolean;
+  allowedSiteTypes: string[];
+}
+
 const CATEGORY_INFO: Record<string, { label: string; icon: React.ComponentType<{ className?: string }> }> = {
   recommended: { label: 'Hızlı Ekle', icon: Sparkles },
   common: { label: 'Temel', icon: LayoutGrid },
@@ -31,10 +42,45 @@ export default function AddBlockSheet({ isOpen, onClose }: AddBlockSheetProps) {
   const { site, blocks, addBlock } = useEditor();
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('recommended');
+  const [adminBlockTypes, setAdminBlockTypes] = useState<BlockTypeData[] | null>(null);
 
   const hasProfileCard = blocks.some(b => b.block_type === 'profile_card');
 
-  const blockTypes = useMemo<BlockTypeData[]>(
+  useEffect(() => {
+    if (!isOpen) return;
+
+    let ignore = false;
+    const params = new URLSearchParams();
+    if (site?.site_type) params.set('siteType', site.site_type);
+
+    fetch(`/api/block-types?${params.toString()}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: ApiBlockTypeData[] | null) => {
+        if (ignore || !Array.isArray(data)) return;
+        setAdminBlockTypes(
+          data
+            .filter((bt) => isBlockTypeRegistered(bt.blockType))
+            .map((bt) => ({
+              block_type: bt.blockType,
+              name: bt.name,
+              description: bt.description ?? '',
+              icon: bt.icon,
+              category: bt.category,
+              is_pro: bt.isPro,
+              allowed_site_types: bt.allowedSiteTypes,
+            })),
+        );
+      })
+      .catch(() => {
+        if (!ignore) setAdminBlockTypes(null);
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [isOpen, site?.site_type]);
+
+  const fallbackBlockTypes = useMemo<BlockTypeData[]>(
     () =>
       Object.entries(BLOCK_DEFINITIONS).map(([type, definition]) => ({
         block_type: type,
@@ -47,6 +93,8 @@ export default function AddBlockSheet({ isOpen, onClose }: AddBlockSheetProps) {
       })),
     []
   );
+
+  const blockTypes = adminBlockTypes?.length ? adminBlockTypes : fallbackBlockTypes;
 
   const { recommendedBlocks, categorizedBlocks } = useMemo(() => {
     const categories: Record<string, { type: BlockType; label: string; icon: string; description: string; isPro: boolean }[]> = {

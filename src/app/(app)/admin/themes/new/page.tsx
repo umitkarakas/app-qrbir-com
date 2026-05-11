@@ -55,13 +55,13 @@ export default function NewThemePage() {
       <div className="max-w-2xl mx-auto px-4 py-8">
         <div className="flex items-center gap-3 mb-8">
           <Link href="/admin/themes" className="text-gray-400 hover:text-gray-600 text-sm">
-            ← Temalar
+            ← Tasarımlar
           </Link>
           <span className="text-gray-300">/</span>
-          <span className="text-sm text-gray-600 font-medium">Yeni Tema</span>
+          <span className="text-sm text-gray-600 font-medium">Yeni Tasarım</span>
         </div>
 
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Yeni Tema Oluştur</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">Yeni Tasarım Oluştur</h1>
 
         {/* Adım 1: Ürün tipi seç */}
         <div className="mb-6">
@@ -131,7 +131,7 @@ export default function NewThemePage() {
               <div className="space-y-4">
                 <div>
                   <h2 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
-                    3. Tema Adı
+                    3. Tasarım Adı
                   </h2>
                   <input
                     type="text"

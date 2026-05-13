@@ -742,6 +742,68 @@ Tema editörü:
 
 Bu sınır korunursa ileride fiziksel ürün, tema marketplace ve studio hizmetleri birbirine karışmadan büyür.
 
+### Hafif Şablon Contract Kararı
+
+Bu sistemde ekran görüntüsünü uygulama içinde otomatik analiz eden bir visual builder veya parser katmanı planlanmaz. Admin tek kaynak operatördür; yeni özel tasarımlar dışarıda analiz edilip sisteme kontrollü `template contract` ve tasarım token'ı olarak eklenir.
+
+Kalıcı hedef:
+
+- Admin özel şablon ve tasarım girdilerini sisteme ekler.
+- Şablon hangi blokların kullanılacağını, hangi alanların müşteri tarafından doldurulacağını ve hangi alanların kilitli kalacağını belirler.
+- Tasarım renk, font, radius, spacing ve component variant gibi görsel token'ları taşır.
+- Müşteri blok veya layout tasarlamaz; yalnızca şablonun açtığı metin, görsel, link, ürün ve benzeri içerik alanlarını doldurur.
+- Public renderer kontrollü kodda kalır; arbitrary HTML, CSS veya JS çalıştırılmaz.
+
+Hafif template contract `templates.metadata.contract` altında taşınabilir:
+
+```json
+{
+  "schema": "qrbir-template-contract",
+  "version": 1,
+  "productType": "restaurant_menu",
+  "userEditable": {
+    "blocks": [
+      {
+        "id": "hero",
+        "blockType": "profile_card",
+        "label": "Restoran Bilgileri",
+        "required": true,
+        "repeatable": false,
+        "editableFields": [
+          { "key": "name", "label": "Restoran Adı", "type": "text", "required": true },
+          { "key": "bio", "label": "Kısa Açıklama", "type": "textarea" },
+          { "key": "avatarUrl", "label": "Logo", "type": "image" }
+        ]
+      },
+      {
+        "id": "menu_items",
+        "blockType": "menu_item",
+        "label": "Menü Ürünleri",
+        "required": true,
+        "repeatable": true,
+        "editableFields": [
+          { "key": "name", "label": "Ürün Adı", "type": "text", "required": true },
+          { "key": "description", "label": "Açıklama", "type": "textarea" },
+          { "key": "price", "label": "Fiyat", "type": "number", "required": true },
+          { "key": "imageUrl", "label": "Ürün Görseli", "type": "image" }
+        ]
+      }
+    ]
+  },
+  "defaults": {
+    "blocks": [],
+    "settings": {}
+  },
+  "constraints": {
+    "lockedLayout": true,
+    "allowBlockReorder": false,
+    "allowBlockAddRemove": false
+  }
+}
+```
+
+Bu karar sistemin hantal bir sayfa kurucuya dönüşmesini engeller. Esneklik admin girdisinde, stabilite ise kullanıcıya açılan sınırlı içerik contract'ında kalır.
+
 ## Upload ve Medya
 
 - Upload API: `/api/upload`

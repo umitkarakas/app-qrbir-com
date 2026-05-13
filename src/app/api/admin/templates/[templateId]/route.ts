@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { z } from "zod";
 import { BlockEditorBlockSchema } from "@/features/block-editor/lib/validation";
+import { TemplateContractSchema } from "@/features/block-editor/lib/template-contract";
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "")
   .split(",")
@@ -26,7 +27,13 @@ const PatchSchema = z.object({
   themeId: z.number().int().positive().optional().nullable(),
   blocks: z.array(BlockEditorBlockSchema).optional(),
   settings: z.record(z.string(), z.unknown()).optional(),
-  metadata: z.record(z.string(), z.unknown()).optional(),
+  metadata: z
+    .record(z.string(), z.unknown())
+    .refine((metadata) => {
+      if (!("contract" in metadata)) return true;
+      return TemplateContractSchema.safeParse(metadata.contract).success;
+    }, "Invalid template contract")
+    .optional(),
   previewInfo: z.record(z.string(), z.unknown()).optional(),
   isPremium: z.boolean().optional(),
   isActive: z.boolean().optional(),

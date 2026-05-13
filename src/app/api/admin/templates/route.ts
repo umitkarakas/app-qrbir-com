@@ -5,6 +5,7 @@ import { templates } from "@/db/schema";
 import { and, desc, eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { z } from "zod";
+import { BlockEditorBlockSchema } from "@/features/block-editor/lib/validation";
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "")
   .split(",")
@@ -58,7 +59,7 @@ const CreateSchema = z.object({
   productType: z.enum(VALID_PRODUCT_TYPES),
   thumbnailUrl: z.string().url().optional().nullable(),
   themeId: z.number().int().positive().optional().nullable(),
-  blocks: z.array(z.unknown()).default([]),
+  blocks: z.array(BlockEditorBlockSchema).default([]),
   settings: z.record(z.string(), z.unknown()).default({}),
   metadata: z.record(z.string(), z.unknown()).default({}),
   previewInfo: z.record(z.string(), z.unknown()).default({}),

@@ -9,6 +9,7 @@ import { migrateContent } from "@/lib/content-migrator";
 import { revalidatePath } from "next/cache";
 import { checkFreeLimitWarnings } from "@/lib/plan-limits";
 import { isBlockEditorContent } from "@/features/block-editor/types/content";
+import { parseBlockEditorContent } from "@/features/block-editor/lib/validation";
 
 async function loadProject(projectId: number, userId: string) {
   const [project] = await db
@@ -106,7 +107,7 @@ export async function PUT(
   }
 
   const parsed = isBlockEditorContent(body.content)
-    ? { success: true as const, data: body.content }
+    ? parseBlockEditorContent(body.content)
     : mod.schema.safeParse(body.content);
 
   if (!parsed.success) {

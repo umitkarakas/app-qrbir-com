@@ -21,7 +21,7 @@ type EditorContextType = {
   isDirty: boolean;
   isSaving: boolean;
   loading: boolean;
-  mode: "live";
+  mode: "project" | "template" | "design-preview" | "guest";
   canPublish: boolean;
   canUploadToCloud: boolean;
   themes: Theme[];
@@ -55,6 +55,7 @@ type EditorProviderProps = {
   initialSite: Site;
   initialBlocks: Block[];
   themes?: Theme[];
+  mode?: EditorContextType["mode"];
   onSaveContent?: (site: Site, blocks: Block[]) => Promise<void>;
   children: React.ReactNode;
 };
@@ -64,6 +65,7 @@ export function EditorProvider({
   initialSite,
   initialBlocks,
   themes = [],
+  mode = "project",
   onSaveContent,
   children,
 }: EditorProviderProps) {
@@ -260,7 +262,7 @@ export function EditorProvider({
       isDirty,
       isSaving,
       loading: false,
-      mode: "live",
+      mode,
       canPublish: true,
       canUploadToCloud: true,
       themes,
@@ -291,6 +293,7 @@ export function EditorProvider({
       previewMode,
       isDirty,
       isSaving,
+      mode,
       themes,
       selectedTheme,
       loadSite,

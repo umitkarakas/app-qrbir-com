@@ -4,6 +4,7 @@ import { templates } from "@/db/schema";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { desc } from "drizzle-orm";
+import Link from "next/link";
 import { AppHeader } from "@/components/layout/app-header";
 import { TemplateActions } from "./template-actions";
 
@@ -63,7 +64,12 @@ export default async function AdminTemplatesPage() {
                 {list.map((template) => (
                   <tr key={template.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-4 py-3">
-                      <div className="font-medium text-gray-900">{template.name}</div>
+                      <Link
+                        href={`/admin/templates/${template.id}/edit`}
+                        className="font-medium text-gray-900 hover:text-violet-700"
+                      >
+                        {template.name}
+                      </Link>
                       <div className="text-xs text-gray-500 mt-0.5">{template.slug}</div>
                       {template.description ? (
                         <div className="text-xs text-gray-400 mt-1 max-w-xl">

@@ -5,6 +5,7 @@ import { templates } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { z } from "zod";
+import { BlockEditorBlockSchema } from "@/features/block-editor/lib/validation";
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "")
   .split(",")
@@ -23,7 +24,7 @@ const PatchSchema = z.object({
   description: z.string().max(500).optional().nullable(),
   thumbnailUrl: z.string().url().optional().nullable(),
   themeId: z.number().int().positive().optional().nullable(),
-  blocks: z.array(z.unknown()).optional(),
+  blocks: z.array(BlockEditorBlockSchema).optional(),
   settings: z.record(z.string(), z.unknown()).optional(),
   metadata: z.record(z.string(), z.unknown()).optional(),
   previewInfo: z.record(z.string(), z.unknown()).optional(),

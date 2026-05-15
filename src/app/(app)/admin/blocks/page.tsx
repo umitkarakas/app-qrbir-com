@@ -89,8 +89,14 @@ export default async function AdminBlocksPage() {
                     <td className="px-4 py-3">
                       <BlockTypeActions
                         id={block.id}
+                        name={block.name}
+                        description={block.description}
+                        icon={block.icon}
+                        category={block.category}
+                        allowedSiteTypes={block.allowedSiteTypes}
                         isEnabled={block.isEnabled}
                         isPro={block.isPro}
+                        sortOrder={block.sortOrder}
                       />
                     </td>
                   </tr>

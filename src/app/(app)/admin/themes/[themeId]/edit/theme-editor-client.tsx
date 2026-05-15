@@ -17,7 +17,6 @@ import { useCallback, useState } from "react";
 import { EditorProvider, useEditor } from "@/features/block-editor/contexts/EditorContext";
 import AddBlockSheet from "@/features/block-editor/components/editor/AddBlockSheet";
 import EditBlockSheet from "@/features/block-editor/components/editor/EditBlockSheet";
-import ThemeSelectSheet from "@/features/block-editor/components/editor/ThemeSelectSheet";
 import EditorCanvas from "@/features/block-editor/components/editor/EditorCanvas";
 import Modal from "@/features/block-editor/components/ui/Modal";
 import Input from "@/features/block-editor/components/ui/Input";
@@ -46,6 +45,7 @@ type Props = {
   blocks: Block[];
   themes: Theme[];
   baseConfig: ThemeConfig;
+  availableTemplates: { id: string; name: string; version: number }[];
 };
 
 type SettingsData = {
@@ -54,9 +54,10 @@ type SettingsData = {
   previewImageUrl: string;
   isFree: boolean;
   isPremium: boolean;
+  templateId: string;
 };
 
-export function ThemeEditorClient({ theme, site, blocks, themes, baseConfig }: Props) {
+export function ThemeEditorClient({ theme, site, blocks, themes, baseConfig, availableTemplates }: Props) {
   const handleSaveContent = useCallback(
     async (nextSite: Site, nextBlocks: Block[]) => {
       const content = buildBlockEditorContent(nextSite, nextBlocks);
@@ -89,15 +90,26 @@ export function ThemeEditorClient({ theme, site, blocks, themes, baseConfig }: P
       themes={themes}
       onSaveContent={handleSaveContent}
     >
-      <ThemeEditorShell theme={theme} />
+      <ThemeEditorShell
+        theme={theme}
+        baseConfig={baseConfig}
+        availableTemplates={availableTemplates}
+      />
     </EditorProvider>
   );
 }
 
-function ThemeEditorShell({ theme }: { theme: ThemeEditorMeta }) {
-  const { site, blocks, isDirty, isSaving, save, themes } = useEditor();
+function ThemeEditorShell({
+  theme,
+  baseConfig,
+  availableTemplates,
+}: {
+  theme: ThemeEditorMeta;
+  baseConfig: ThemeConfig;
+  availableTemplates: { id: string; name: string; version: number }[];
+}) {
+  const { site, blocks, isDirty, isSaving, save } = useEditor();
   const [addSheetOpen, setAddSheetOpen] = useState(false);
-  const [themeSheetOpen, setThemeSheetOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [savingMeta, setSavingMeta] = useState(false);
   const [togglingStatus, setTogglingStatus] = useState(false);
@@ -110,6 +122,7 @@ function ThemeEditorShell({ theme }: { theme: ThemeEditorMeta }) {
     previewImageUrl: theme.previewImageUrl ?? "",
     isFree: theme.isFree,
     isPremium: theme.isPremium,
+    templateId: theme.templateId ?? "",
   });
 
   async function handleSave() {
@@ -143,6 +156,7 @@ function ThemeEditorShell({ theme }: { theme: ThemeEditorMeta }) {
   }
 
   async function handleSaveSettings() {
+    if (!site) return;
     setSavingMeta(true);
     setError(null);
     try {
@@ -155,6 +169,15 @@ function ThemeEditorShell({ theme }: { theme: ThemeEditorMeta }) {
           previewImageUrl: settingsData.previewImageUrl || null,
           isFree: settingsData.isFree,
           isPremium: settingsData.isPremium,
+          themeConfigJson: {
+            ...baseConfig,
+            templateId: settingsData.templateId || undefined,
+            templateVersion:
+              availableTemplates.find((item) => item.id === settingsData.templateId)?.version ??
+              currentTheme.templateVersion ??
+              1,
+            editorContent: buildBlockEditorContent(site, blocks),
+          },
         }),
       });
       if (!res.ok) throw new Error("Tema ayarları kaydedilemedi");
@@ -195,7 +218,7 @@ function ThemeEditorShell({ theme }: { theme: ThemeEditorMeta }) {
               <div className="flex items-center gap-2">
                 <h1 className="truncate text-sm font-semibold text-white">{currentTheme.name}</h1>
                 <span className="rounded bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-300">
-                  Tema Editörü
+                  Tasarım Editörü
                 </span>
                 {isDirty && <span className="hidden text-xs font-medium text-amber-300 sm:inline">Kaydedilmedi</span>}
               </div>
@@ -234,7 +257,7 @@ function ThemeEditorShell({ theme }: { theme: ThemeEditorMeta }) {
             <button
               onClick={() => setSettingsOpen(true)}
               className="rounded-lg p-2 text-slate-400 hover:bg-slate-900 hover:text-white"
-              title="Tema ayarları"
+              title="Tasarım ayarları"
             >
               <Settings className="h-5 w-5" />
             </button>
@@ -250,12 +273,11 @@ function ThemeEditorShell({ theme }: { theme: ThemeEditorMeta }) {
         <div className="pointer-events-auto relative mx-auto flex max-w-lg items-end justify-center">
           <div className="flex items-center gap-16 rounded-[28px] border border-slate-100 bg-white px-6 py-3 shadow-lg shadow-slate-900/10 sm:gap-20">
             <button
-              onClick={() => setThemeSheetOpen(true)}
+              onClick={() => setSettingsOpen(true)}
               className="flex flex-col items-center gap-1 px-3 text-slate-400 transition-colors hover:text-slate-700 disabled:opacity-50"
-              disabled={themes.length === 0}
             >
               <Palette className="h-6 w-6" />
-              <span className="text-[10px] font-medium">Tasarım</span>
+              <span className="text-[10px] font-medium">Şablon</span>
             </button>
 
             <button
@@ -289,27 +311,41 @@ function ThemeEditorShell({ theme }: { theme: ThemeEditorMeta }) {
       </footer>
 
       <AddBlockSheet isOpen={addSheetOpen} onClose={() => setAddSheetOpen(false)} />
-      <ThemeSelectSheet isOpen={themeSheetOpen} onClose={() => setThemeSheetOpen(false)} />
       <EditBlockSheet />
 
       <Modal
         isOpen={settingsOpen}
         onClose={() => setSettingsOpen(false)}
-        title="Tema Ayarları"
+        title="Tasarım Ayarları"
         size="md"
       >
         <div className="space-y-4">
+          <label className="block">
+            <span className="mb-1.5 block text-sm font-medium text-slate-700">Şablon</span>
+            <select
+              value={settingsData.templateId}
+              onChange={(e) => setSettingsData({ ...settingsData, templateId: e.target.value })}
+              className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+            >
+              <option value="">Şablon seçilmedi</option>
+              {availableTemplates.map((template) => (
+                <option key={template.id} value={template.id}>
+                  {template.name}
+                </option>
+              ))}
+            </select>
+          </label>
           <Input
-            label="Tema Adı"
+            label="Tasarım Adı"
             value={settingsData.name}
             onChange={(e) => setSettingsData({ ...settingsData, name: e.target.value })}
-            placeholder="Tema adı"
+            placeholder="Tasarım adı"
           />
           <Textarea
             label="Açıklama"
             value={settingsData.description}
             onChange={(e) => setSettingsData({ ...settingsData, description: e.target.value })}
-            placeholder="Tema açıklaması"
+            placeholder="Tasarım açıklaması"
             rows={3}
           />
           <Input
@@ -325,7 +361,7 @@ function ThemeEditorShell({ theme }: { theme: ThemeEditorMeta }) {
               onChange={(e) => setSettingsData({ ...settingsData, isFree: e.target.checked })}
               className="h-4 w-4 rounded border-slate-300 text-amber-500 focus:ring-amber-500"
             />
-            <span className="text-sm text-slate-700">Ücretsiz tema</span>
+            <span className="text-sm text-slate-700">Ücretsiz tasarım</span>
           </label>
           <label className="flex cursor-pointer items-center gap-2">
             <input
@@ -334,7 +370,7 @@ function ThemeEditorShell({ theme }: { theme: ThemeEditorMeta }) {
               onChange={(e) => setSettingsData({ ...settingsData, isPremium: e.target.checked })}
               className="h-4 w-4 rounded border-slate-300 text-amber-500 focus:ring-amber-500"
             />
-            <span className="text-sm text-slate-700">Premium tema</span>
+            <span className="text-sm text-slate-700">Premium tasarım</span>
           </label>
         </div>
         <div className="mt-6 flex gap-3">

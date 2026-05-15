@@ -173,6 +173,11 @@ export default async function ThemeEditPage({
       blocks={blocks}
       themes={blockThemes}
       baseConfig={initialConfig}
+      availableTemplates={listTemplates(theme.productType as ProjectType).map((item) => ({
+        id: item.id,
+        name: item.name,
+        version: item.version,
+      }))}
     />
   );
 }

@@ -6,31 +6,16 @@ import { headers } from "next/headers";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { getTemplate, listTemplates } from "@/lib/theme-editor/registry";
-import { BIO_LINK_DEMO } from "@/themes/bio-link/fixtures";
-import { RESTAURANT_MENU_DEMO } from "@/themes/restaurant-menu/fixtures";
 import { ThemeEditorClient } from "./theme-editor-client";
 import { LegacyThemeActions } from "./legacy-theme-actions";
 import type { ThemeConfig } from "@/types/theme";
 import type { StoredThemeConfig } from "@/lib/theme-editor/contract";
 import type { ProjectType } from "@/lib/theme-editor/contract";
-import {
-  createBlocksFromContent,
-  createEditorSite,
-  isBlockEditorContent,
-  type EditorProject,
-} from "@/features/block-editor/types/content";
-import type { Theme } from "@/features/block-editor/types/database";
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "")
   .split(",")
   .map((e) => e.trim())
   .filter(Boolean);
-
-const DEMO_CONTENT: Record<string, unknown> = {
-  bio_link: BIO_LINK_DEMO,
-  brand_bio: BIO_LINK_DEMO,
-  restaurant_menu: RESTAURANT_MENU_DEMO,
-};
 
 const PRODUCT_TYPE_LABELS: Record<string, string> = {
   restaurant_menu: "Restoran Menü",
@@ -127,10 +112,7 @@ export default async function ThemeEditPage({
     );
   }
 
-  const demoContent = DEMO_CONTENT[theme.productType] ?? null;
-
   // themeConfigJson'dan ThemeConfig alanlarını çıkar (templateId/templateVersion hariç)
-  const editorContent = stored.editorContent;
   const config = { ...stored } as Record<string, unknown>;
   delete config.templateId;
   delete config.templateVersion;
@@ -138,21 +120,6 @@ export default async function ThemeEditPage({
   const initialConfig: ThemeConfig = Object.keys(config).length
     ? (config as ThemeConfig)
     : template.defaultConfig;
-  const editorProject: EditorProject = {
-    id: theme.id,
-    title: theme.name,
-    slug: theme.slug,
-    projectType: theme.productType,
-    subdomainType: "m",
-    status: theme.status === "active" ? "published" : "draft",
-    viewCount: 0,
-    qrCount: 0,
-    themeName: theme.name,
-  };
-  const editorSource = isBlockEditorContent(editorContent) ? editorContent : demoContent;
-  const site = createEditorSite(editorProject, editorSource);
-  const blocks = createBlocksFromContent(editorProject, editorSource);
-  const blockThemes: Theme[] = [];
 
   return (
     <ThemeEditorClient
@@ -169,9 +136,6 @@ export default async function ThemeEditPage({
         templateId: template.id,
         templateVersion: template.version,
       }}
-      site={site}
-      blocks={blocks}
-      themes={blockThemes}
       baseConfig={initialConfig}
       availableTemplates={listTemplates(theme.productType as ProjectType).map((item) => ({
         id: item.id,

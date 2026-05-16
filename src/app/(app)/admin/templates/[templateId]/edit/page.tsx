@@ -59,7 +59,7 @@ export default async function TemplateEditPage({
     .where(eq(designThemes.productType, template.productType))
     .orderBy(asc(designThemes.name));
   const themes: Theme[] = themeRows
-    .filter((theme) => theme.status === "active")
+    .filter((theme) => theme.status !== "archived")
     .map((theme) => mapDesignTheme(theme));
 
   return (

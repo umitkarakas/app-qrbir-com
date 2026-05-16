@@ -1,9 +1,8 @@
 import { useState, useMemo } from 'react';
-import { X, Search, Palette, Check, Lock } from 'lucide-react';
+import { X, Search, Check, Lock } from 'lucide-react';
 import { useEditor } from '../../contexts/EditorContext';
 import type { Theme } from '../../types/database';
 import type { ThemeConfig } from '../../types/theme';
-import ThemePreviewPanel from './ThemePreviewPanel';
 
 interface ThemeSelectSheetProps {
   isOpen: boolean;
@@ -32,21 +31,11 @@ export default function ThemeSelectSheet({ isOpen, onClose }: ThemeSelectSheetPr
     );
   }, [search, themes]);
 
-  const handleSelectTheme = (themeId: string | null, isPremium: boolean = false) => {
+  const handleSelectTheme = (themeId: string, isPremium: boolean = false) => {
     void isPremium;
     selectTheme(themeId);
     onClose();
   };
-
-  const previewConfig = useMemo(() => {
-    if (hoveredTheme) {
-      return hoveredTheme.config as ThemeConfig;
-    }
-    if (selectedTheme) {
-      return selectedTheme.config as ThemeConfig;
-    }
-    return null;
-  }, [hoveredTheme, selectedTheme]);
 
   if (!isOpen) return null;
 
@@ -57,8 +46,8 @@ export default function ThemeSelectSheet({ isOpen, onClose }: ThemeSelectSheetPr
         <div className="flex h-full flex-col border-r border-slate-200 bg-white shadow-2xl">
             <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
               <div>
-                <h2 className="text-lg font-semibold text-slate-900">Tasarim Sec</h2>
-                <p className="mt-1 text-xs text-slate-500">Secim onizlemeye uygulanir, Kaydet ile sabitlenir.</p>
+                <h2 className="text-lg font-semibold text-slate-900">Tasarım Seç</h2>
+                <p className="mt-1 text-xs text-slate-500">/admin/themes tasarımları. Kaydet ile şablona bağlanır.</p>
               </div>
               <button
                 onClick={onClose}
@@ -76,46 +65,18 @@ export default function ThemeSelectSheet({ isOpen, onClose }: ThemeSelectSheetPr
                     type="text"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Tema ara..."
+                    placeholder="Tasarım ara..."
                     className="w-full pl-10 pr-4 py-2.5 bg-slate-100 border-0 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900"
                   />
                 </div>
               </div>
 
               <div className="flex-1 overflow-y-auto overscroll-contain p-5">
-                <div className="mb-4">
-                  <button
-                    onClick={() => handleSelectTheme(null)}
-                    onMouseEnter={() => setHoveredTheme(null)}
-                    onMouseLeave={() => setHoveredTheme(null)}
-                    className={`w-full rounded-xl border-2 p-3 transition-all ${
-                      !selectedTheme
-                        ? 'border-slate-900 bg-slate-50'
-                        : 'border-slate-200 hover:border-slate-300'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-gradient-to-br from-slate-100 to-slate-200 rounded-lg flex items-center justify-center">
-                          <Palette className="w-6 h-6 text-slate-400" />
-                        </div>
-                        <div className="text-left">
-                          <h3 className="font-semibold text-slate-900">Varsayilan</h3>
-                          <p className="text-sm text-slate-500">Temasiz kullan</p>
-                        </div>
-                      </div>
-                      {!selectedTheme && (
-                        <div className="w-6 h-6 bg-slate-900 rounded-full flex items-center justify-center">
-                          <Check className="w-4 h-4 text-white" />
-                        </div>
-                      )}
-                    </div>
-                  </button>
-                </div>
-
                 {filteredThemes.length === 0 ? (
                   <div className="text-center py-8">
-                    <p className="text-slate-500 text-sm">{`"${search}" icin tema bulunamadi`}</p>
+                    <p className="text-sm text-slate-500">
+                      {search ? `"${search}" için tasarım bulunamadı` : "Bu ürün tipi için tasarım bulunamadı"}
+                    </p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -136,9 +97,9 @@ export default function ThemeSelectSheet({ isOpen, onClose }: ThemeSelectSheetPr
 
             <div className="border-t border-slate-100 bg-slate-50 p-4">
               <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-400">
-                {hoveredTheme ? `Onizleme: ${hoveredTheme.name}` : selectedTheme ? `Secili: ${selectedTheme.name}` : 'Varsayilan tema'}
+                {hoveredTheme ? `Önizleme: ${hoveredTheme.name}` : selectedTheme ? `Seçili: ${selectedTheme.name}` : 'Tasarım seçilmedi'}
               </p>
-              <ThemePreviewPanel config={previewConfig} compact />
+              <AdminThemePreview theme={hoveredTheme ?? selectedTheme} />
             </div>
           </div>
       </aside>
@@ -155,8 +116,6 @@ interface ThemeOptionProps {
 }
 
 function ThemeOption({ theme, isSelected, isLocked, onSelect, onHover }: ThemeOptionProps) {
-  const config = theme.config as ThemeConfig;
-
   return (
     <button
       onClick={() => onSelect(theme.id, theme.is_premium)}
@@ -179,31 +138,110 @@ function ThemeOption({ theme, isSelected, isLocked, onSelect, onHover }: ThemeOp
         </div>
       )}
       <div className="space-y-3">
-        <div className="overflow-hidden rounded-lg border border-slate-100">
-          <ThemePreviewPanel config={config} compact />
-        </div>
+        <AdminThemePreview theme={theme} />
         <div className="flex items-center gap-3">
-          <ThemePreviewMini config={config} />
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-slate-900 truncate">{theme.name}</h3>
-            {theme.is_premium && (
-              <span className="px-2 py-0.5 bg-amber-500 text-white text-xs font-semibold rounded shrink-0">
-                PRO
-              </span>
-            )}
+          <ThemePreviewMini config={theme.config as ThemeConfig} />
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <h3 className="truncate font-semibold text-slate-900">{theme.name}</h3>
+              {theme.is_premium && (
+                <span className="shrink-0 rounded bg-amber-500 px-2 py-0.5 text-xs font-semibold text-white">
+                  PRO
+                </span>
+              )}
+            </div>
+            <p className="truncate text-sm text-slate-500">{theme.description}</p>
+            {STYLE_LABELS[theme.style] ? (
+              <p className="mt-0.5 text-xs text-slate-400">{STYLE_LABELS[theme.style]}</p>
+            ) : null}
           </div>
-          <p className="text-sm text-slate-500 truncate">{theme.description}</p>
-          <p className="text-xs text-slate-400 mt-0.5">{STYLE_LABELS[theme.style]}</p>
-        </div>
-        {isSelected && !isLocked && (
-          <div className="w-6 h-6 bg-slate-900 rounded-full flex items-center justify-center shrink-0">
-            <Check className="w-4 h-4 text-white" />
-          </div>
-        )}
+          {isSelected && !isLocked && (
+            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-900">
+              <Check className="h-4 w-4 text-white" />
+            </div>
+          )}
         </div>
       </div>
     </button>
+  );
+}
+
+function AdminThemePreview({ theme }: { theme: Theme | null }) {
+  if (!theme) {
+    return (
+      <div className="rounded-lg border border-dashed border-slate-200 bg-white p-5 text-center text-sm text-slate-400">
+        Sol listeden bir tasarım seçin.
+      </div>
+    );
+  }
+
+  const config = theme.config as ThemeConfig;
+  const { colors, style } = config;
+
+  if (theme.preview_image) {
+    return (
+      <div className="overflow-hidden rounded-lg border border-slate-100 bg-slate-100">
+        <img
+          src={theme.preview_image}
+          alt={`${theme.name} önizleme`}
+          className="h-44 w-full object-cover"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="overflow-hidden rounded-lg border border-slate-100 p-4"
+      style={{
+        backgroundColor: colors.background,
+        color: colors.text,
+        borderColor: colors.border,
+        boxShadow: style.shadow,
+      }}
+    >
+      <div
+        className="space-y-3 border p-4"
+        style={{
+          backgroundColor: colors.surface,
+          borderColor: colors.border,
+          borderRadius: style.borderRadius,
+        }}
+      >
+        <div className="flex items-center gap-3">
+          <div
+            className="h-10 w-10 rounded-full"
+            style={{ backgroundColor: colors.primary }}
+          />
+          <div className="min-w-0 flex-1">
+            <div
+              className="h-3 w-28 rounded"
+              style={{ backgroundColor: colors.text }}
+            />
+            <div
+              className="mt-2 h-2 w-20 rounded"
+              style={{ backgroundColor: colors.textSecondary }}
+            />
+          </div>
+        </div>
+        <div
+          className="h-10 w-full rounded"
+          style={{
+            backgroundColor: colors.primary,
+            borderRadius: style.borderRadius,
+          }}
+        />
+        <div className="grid grid-cols-4 gap-2">
+          {[colors.primary, colors.secondary, colors.accent, colors.border].map((color, index) => (
+            <span
+              key={`${color}-${index}`}
+              className="h-6 rounded"
+              style={{ backgroundColor: color }}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 

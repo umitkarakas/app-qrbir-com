@@ -86,6 +86,44 @@ export async function PATCH(
   return NextResponse.json(updated);
 }
 
+// POST /api/admin/themes/[themeId] — duplicate theme
+export async function POST(
+  _request: NextRequest,
+  { params }: { params: Promise<{ themeId: string }> },
+) {
+  const session = await requireAdmin();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { themeId } = await params;
+  const id = parseInt(themeId, 10);
+  if (isNaN(id)) return NextResponse.json({ error: "Geçersiz ID" }, { status: 400 });
+
+  const [theme] = await db.select().from(themes).where(eq(themes.id, id));
+  if (!theme) return NextResponse.json({ error: "Tema bulunamadı" }, { status: 404 });
+
+  const baseSlug = theme.slug
+    .replace(/-\d+$/, "")
+    .replace(/-kopya$/, "")
+    .substring(0, 52);
+
+  const [created] = await db
+    .insert(themes)
+    .values({
+      productType: theme.productType,
+      name: `${theme.name} Kopya`,
+      slug: `${baseSlug}-kopya-${Date.now()}`,
+      description: theme.description,
+      previewImageUrl: theme.previewImageUrl,
+      isFree: theme.isFree,
+      isPremium: theme.isPremium,
+      status: "draft",
+      themeConfigJson: theme.themeConfigJson,
+    })
+    .returning();
+
+  return NextResponse.json(created, { status: 201 });
+}
+
 // DELETE /api/admin/themes/[themeId] — soft delete (archived)
 export async function DELETE(
   _request: NextRequest,

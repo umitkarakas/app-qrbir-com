@@ -5,9 +5,11 @@ import {
   ArrowLeft,
   Check,
   ExternalLink,
+  FileCode2,
   Loader2,
   Plus,
   Save,
+  X,
 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { EditorProvider, useEditor } from "@/features/block-editor/contexts/EditorContext";
@@ -16,6 +18,7 @@ import EditBlockSheet from "@/features/block-editor/components/editor/EditBlockS
 import EditorCanvas from "@/features/block-editor/components/editor/EditorCanvas";
 import { buildBlockEditorContent } from "@/features/block-editor/types/content";
 import type { Block, Site, Theme } from "@/features/block-editor/types/database";
+import { TemplateContractSchema } from "@/features/block-editor/lib/template-contract";
 
 type TemplateEditorMeta = {
   id: number;
@@ -27,6 +30,7 @@ type TemplateEditorMeta = {
   isActive: boolean;
   isPremium: boolean;
   version: number;
+  metadata: Record<string, unknown> | null;
 };
 
 type Props = {
@@ -80,6 +84,7 @@ export function TemplateEditorClient({ template, site, blocks, themes }: Props) 
 function TemplateEditorShell({ template }: { template: TemplateEditorMeta }) {
   const { site, blocks, isDirty, isSaving, save } = useEditor();
   const [addSheetOpen, setAddSheetOpen] = useState(false);
+  const [contractSheetOpen, setContractSheetOpen] = useState(false);
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -128,6 +133,14 @@ function TemplateEditorShell({ template }: { template: TemplateEditorMeta }) {
                 {error}
               </span>
             )}
+            <button
+              onClick={() => setContractSheetOpen(true)}
+              className="hidden items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-slate-300 transition-colors hover:bg-slate-900 hover:text-white sm:flex"
+              title="Contract JSON düzenle"
+            >
+              <FileCode2 className="h-4 w-4" />
+              Contract
+            </button>
             <Link
               href="/admin/templates"
               className="hidden items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-slate-300 transition-colors hover:bg-slate-900 hover:text-white sm:flex"
@@ -175,6 +188,147 @@ function TemplateEditorShell({ template }: { template: TemplateEditorMeta }) {
 
       <AddBlockSheet isOpen={addSheetOpen} onClose={() => setAddSheetOpen(false)} />
       <EditBlockSheet />
+      <ContractEditorSheet
+        templateId={template.id}
+        isOpen={contractSheetOpen}
+        onClose={() => setContractSheetOpen(false)}
+        initialMetadata={template.metadata}
+      />
     </div>
+  );
+}
+
+const CONTRACT_PLACEHOLDER = JSON.stringify(
+  {
+    version: 1,
+    lockedLayout: true,
+    allowBlockReorder: false,
+    allowBlockAddRemove: false,
+    userEditable: {
+      blocks: [
+        {
+          id: "my-block",
+          blockType: "profile_card",
+          label: "Başlık",
+          required: true,
+          repeatable: false,
+          editableFields: [
+            { key: "name", type: "text", label: "Ad", required: true },
+          ],
+        },
+      ],
+    },
+  },
+  null,
+  2
+);
+
+function ContractEditorSheet({
+  templateId,
+  isOpen,
+  onClose,
+  initialMetadata,
+}: {
+  templateId: number;
+  isOpen: boolean;
+  onClose: () => void;
+  initialMetadata: Record<string, unknown> | null;
+}) {
+  const existingContract = initialMetadata?.contract;
+  const [json, setJson] = useState(
+    existingContract ? JSON.stringify(existingContract, null, 2) : ""
+  );
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  if (!isOpen) return null;
+
+  function validate(value: string): unknown | null {
+    try {
+      const parsed = JSON.parse(value);
+      const result = TemplateContractSchema.safeParse(parsed);
+      if (!result.success) {
+        setValidationError(result.error.issues.map((i) => i.message).join(", "));
+        return null;
+      }
+      setValidationError(null);
+      return result.data;
+    } catch {
+      setValidationError("Geçersiz JSON");
+      return null;
+    }
+  }
+
+  async function handleSave() {
+    const contract = validate(json);
+    if (!contract) return;
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/admin/templates/${templateId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ metadata: { contract } }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        setValidationError(data?.error ?? "Kaydetme başarısız");
+        return;
+      }
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch {
+      setValidationError("Kaydetme başarısız");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <>
+      <div className="fixed inset-0 z-50 bg-black/60" onClick={onClose} />
+      <div className="fixed bottom-0 left-0 right-0 z-50 flex max-h-[85vh] flex-col rounded-t-2xl bg-slate-950 shadow-2xl">
+        <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4">
+          <div>
+            <h2 className="text-sm font-semibold text-white">Contract JSON</h2>
+            <p className="mt-0.5 text-xs text-slate-400">
+              TemplateContractSchema ile doğrulanır · Kaydet ile templates.metadata.contract'a yazılır
+            </p>
+          </div>
+          <button onClick={onClose} className="rounded-lg p-2 text-slate-400 hover:bg-slate-900 hover:text-white">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-auto p-4">
+          <textarea
+            value={json}
+            onChange={(e) => { setJson(e.target.value); setValidationError(null); }}
+            placeholder={CONTRACT_PLACEHOLDER}
+            className="h-full min-h-[320px] w-full rounded-lg bg-slate-900 p-4 font-mono text-xs text-slate-100 outline-none ring-1 ring-slate-700 focus:ring-sky-500"
+            spellCheck={false}
+          />
+          {validationError && (
+            <p className="mt-2 text-xs text-red-400">{validationError}</p>
+          )}
+        </div>
+
+        <div className="flex items-center justify-end gap-3 border-t border-slate-800 px-5 py-4">
+          <button onClick={onClose} className="rounded-lg px-4 py-2 text-sm text-slate-300 hover:bg-slate-900">
+            İptal
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving || !json.trim()}
+            className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+              saved ? "bg-emerald-600 text-white" : "bg-sky-600 text-white hover:bg-sky-700 disabled:opacity-50"
+            }`}
+          >
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : saved ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
+            {saved ? "Kaydedildi" : "Kaydet"}
+          </button>
+        </div>
+      </div>
+    </>
   );
 }

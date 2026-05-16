@@ -65,6 +65,7 @@ export default async function TemplateEditPage({
         isActive: template.isActive,
         isPremium: template.isPremium,
         version: template.version,
+        metadata: readRecord(template.metadata),
       }}
       site={site}
       blocks={blocks}

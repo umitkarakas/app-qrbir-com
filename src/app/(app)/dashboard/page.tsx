@@ -9,7 +9,7 @@ import { CopyUrlButton } from "./copy-url-button";
 import { DeleteProjectButton } from "./delete-project-button";
 import { QrDownloadButton } from "./qr-download-button";
 import { AppHeader } from "@/components/layout/app-header";
-import { LayoutGrid, Zap, Eye, Smartphone, Plus, MoreHorizontal, ExternalLink } from "lucide-react";
+import { LayoutGrid, Zap, Eye, Smartphone, Plus, MoreHorizontal, ExternalLink, Pencil } from "lucide-react";
 
 const STATUS_LABELS: Record<string, string> = {
   draft: "Taslak",
@@ -250,6 +250,14 @@ export default async function DashboardPage() {
                         Tema seç →
                       </Link>
                     )}
+                    {/* Edit button — always visible */}
+                    <Link
+                      href={editHref}
+                      title="Düzenle"
+                      style={{ display: "grid", placeItems: "center", width: 32, height: 32, borderRadius: 11, border: "1px solid rgba(255,255,255,0.65)", background: "rgba(255,255,255,0.55)", color: "var(--color-fg-2)", textDecoration: "none" }}
+                    >
+                      <Pencil size={13} />
+                    </Link>
                     {project.status === "published" && (
                       <a href={publicUrl} target="_blank" rel="noopener noreferrer" style={{ display: "grid", placeItems: "center", width: 32, height: 32, borderRadius: 11, border: "1px solid rgba(255,255,255,0.65)", background: "rgba(255,255,255,0.55)", color: "var(--color-fg-2)", textDecoration: "none" }}>
                         <ExternalLink size={13} />

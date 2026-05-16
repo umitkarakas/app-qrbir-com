@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Check, ExternalLink, Loader2, Save } from "lucide-react";
+import { ArrowLeft, Check, Copy, ExternalLink, Loader2, Palette, Save } from "lucide-react";
 import { useState } from "react";
 import type { TemplateContract } from "@/features/block-editor/lib/template-contract";
 import type { BlockEditorContent } from "@/features/block-editor/types/content";
@@ -29,6 +29,7 @@ export function ContractForm({ project, contract, initialContent }: Props) {
     initialContent,
   });
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   async function handleSave() {
     try {
@@ -40,6 +41,17 @@ export function ContractForm({ project, contract, initialContent }: Props) {
     }
   }
 
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(publicUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // clipboard erişimi yoksa sessiz kal
+    }
+  }
+
+  const isPublished = project.status === "published";
   const publicUrl = `https://${project.subdomainType}.qrbir.com/${project.slug}`;
 
   return (
@@ -63,17 +75,53 @@ export function ContractForm({ project, contract, initialContent }: Props) {
           </div>
 
           <div className="flex items-center gap-2 flex-shrink-0">
-            {project.status === "published" && (
+            {/* Status badge */}
+            <span
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium"
+              style={{
+                backgroundColor: isPublished ? "rgb(240 253 244)" : "rgb(241 245 249)",
+                color: isPublished ? "rgb(22 163 74)" : "rgb(100 116 139)",
+              }}
+            >
+              <span
+                className="w-1.5 h-1.5 rounded-full"
+                style={{ backgroundColor: isPublished ? "rgb(22 163 74)" : "rgb(148 163 184)" }}
+              />
+              {isPublished ? "Yayında" : "Taslak"}
+            </span>
+
+            {/* Theme picker */}
+            <Link
+              href={`/projects/${project.id}/theme`}
+              className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg"
+              title="Tema değiştir"
+            >
+              <Palette className="w-4.5 h-4.5 w-[18px] h-[18px]" />
+            </Link>
+
+            {/* Copy link */}
+            <button
+              onClick={handleCopy}
+              className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg"
+              title="Linki kopyala"
+            >
+              {copied ? <Check className="w-[18px] h-[18px] text-emerald-500" /> : <Copy className="w-[18px] h-[18px]" />}
+            </button>
+
+            {/* Open public page */}
+            {isPublished && (
               <a
                 href={publicUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg"
+                className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg"
+                title="Yayındaki sayfayı aç"
               >
-                <ExternalLink className="w-3.5 h-3.5" />
-                Yayında
+                <ExternalLink className="w-[18px] h-[18px]" />
               </a>
             )}
+
+            {/* Save */}
             <button
               onClick={handleSave}
               disabled={!isDirty || isSaving}

@@ -292,7 +292,7 @@ function ContractEditorSheet({
           <div>
             <h2 className="text-sm font-semibold text-white">Contract JSON</h2>
             <p className="mt-0.5 text-xs text-slate-400">
-              TemplateContractSchema ile doğrulanır · Kaydet ile templates.metadata.contract'a yazılır
+              TemplateContractSchema ile doğrulanır · Kaydet ile templates.metadata.contract&apos;a yazılır
             </p>
           </div>
           <button onClick={onClose} className="rounded-lg p-2 text-slate-400 hover:bg-slate-900 hover:text-white">

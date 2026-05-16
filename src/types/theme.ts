@@ -3,8 +3,16 @@ export type ThemeColors = {
   bg: string;
   /** Ana metin rengi */
   fg: string;
+  /** Baslik rengi (opsiyonel) */
+  heading?: string;
+  /** Link rengi (opsiyonel) */
+  link?: string;
   /** Vurgu / buton rengi */
   accent: string;
+  /** Buton arka plan rengi (opsiyonel) */
+  button?: string;
+  /** Buton metin rengi (opsiyonel) */
+  buttonFg?: string;
   /** Kart arka planı (opsiyonel) */
   card?: string;
   /** Kart metin rengi (opsiyonel) */
@@ -13,12 +21,26 @@ export type ThemeColors = {
   border?: string;
   /** İkincil / soluk metin (opsiyonel) */
   muted?: string;
+  /** Arka plan uzeri dekoratif katman rengi (opsiyonel) */
+  overlay?: string;
+};
+
+export type ThemeSurface = {
+  borderWidth?: number;
+  shadow?: "none" | "soft" | "medium" | "strong" | "glow";
+  background?: "solid" | "gradient" | "pattern";
+  gradientFrom?: string;
+  gradientTo?: string;
+  gradientAngle?: number;
+  cardOpacity?: number;
+  spacing?: "compact" | "comfortable" | "spacious";
 };
 
 export type ThemeConfig = {
   colors: ThemeColors;
   font?: "sans" | "serif" | "mono" | "rounded";
   radius?: "none" | "sm" | "md" | "lg" | "full";
+  surface?: ThemeSurface;
   layout?: string;
   style?: string;
   effect?: string;

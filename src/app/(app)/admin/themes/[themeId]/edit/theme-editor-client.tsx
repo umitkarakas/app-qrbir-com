@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ExternalLink, Loader2, Save } from "lucide-react";
 import { useMemo, useState } from "react";
-import type { ThemeConfig } from "@/types/theme";
+import { FONT_MAP } from "@/types/theme";
+import type { ThemeConfig, ThemeSurface } from "@/types/theme";
 
 type ThemeEditorMeta = {
   id: number;
@@ -37,14 +38,20 @@ type FormState = {
   colors: {
     bg: string;
     fg: string;
+    heading: string;
+    link: string;
     accent: string;
+    button: string;
+    buttonFg: string;
     card: string;
     cardFg: string;
     border: string;
     muted: string;
+    overlay: string;
   };
   font: NonNullable<ThemeConfig["font"]>;
   radius: NonNullable<ThemeConfig["radius"]>;
+  surface: Required<ThemeSurface>;
   layout: string;
   style: string;
   effect: string;
@@ -71,6 +78,26 @@ const STATUS_OPTIONS: { value: FormState["status"]; label: string }[] = [
   { value: "archived", label: "Arşiv" },
 ];
 
+const SHADOW_OPTIONS: { value: FormState["surface"]["shadow"]; label: string }[] = [
+  { value: "none", label: "Yok" },
+  { value: "soft", label: "Yumuşak" },
+  { value: "medium", label: "Orta" },
+  { value: "strong", label: "Belirgin" },
+  { value: "glow", label: "Glow" },
+];
+
+const BACKGROUND_OPTIONS: { value: FormState["surface"]["background"]; label: string }[] = [
+  { value: "solid", label: "Düz" },
+  { value: "gradient", label: "Gradient" },
+  { value: "pattern", label: "Pattern" },
+];
+
+const SPACING_OPTIONS: { value: FormState["surface"]["spacing"]; label: string }[] = [
+  { value: "compact", label: "Sıkı" },
+  { value: "comfortable", label: "Dengeli" },
+  { value: "spacious", label: "Ferah" },
+];
+
 export function ThemeEditorClient({ theme, baseConfig, availableTemplates }: Props) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
@@ -87,14 +114,29 @@ export function ThemeEditorClient({ theme, baseConfig, availableTemplates }: Pro
     colors: {
       bg: baseConfig.colors.bg,
       fg: baseConfig.colors.fg,
+      heading: baseConfig.colors.heading ?? baseConfig.colors.fg,
+      link: baseConfig.colors.link ?? baseConfig.colors.accent,
       accent: baseConfig.colors.accent,
+      button: baseConfig.colors.button ?? baseConfig.colors.accent,
+      buttonFg: baseConfig.colors.buttonFg ?? baseConfig.colors.cardFg ?? "#ffffff",
       card: baseConfig.colors.card ?? "",
       cardFg: baseConfig.colors.cardFg ?? "",
       border: baseConfig.colors.border ?? "",
       muted: baseConfig.colors.muted ?? "",
+      overlay: baseConfig.colors.overlay ?? "",
     },
     font: baseConfig.font ?? "sans",
     radius: baseConfig.radius ?? "md",
+    surface: {
+      borderWidth: baseConfig.surface?.borderWidth ?? 1,
+      shadow: baseConfig.surface?.shadow ?? "soft",
+      background: baseConfig.surface?.background ?? (baseConfig.colors.bg.includes("gradient") ? "gradient" : "solid"),
+      gradientFrom: baseConfig.surface?.gradientFrom ?? "#3b82f6",
+      gradientTo: baseConfig.surface?.gradientTo ?? "#8b5cf6",
+      gradientAngle: baseConfig.surface?.gradientAngle ?? 135,
+      cardOpacity: baseConfig.surface?.cardOpacity ?? 100,
+      spacing: baseConfig.surface?.spacing ?? "comfortable",
+    },
     layout: baseConfig.layout ?? "",
     style: baseConfig.style ?? "",
     effect: baseConfig.effect ?? "",
@@ -111,9 +153,13 @@ export function ThemeEditorClient({ theme, baseConfig, availableTemplates }: Pro
     setSaved(false);
     try {
       const themeConfigJson = compactConfig({
-        colors: compactColors(form.colors),
+        colors: compactColors({
+          ...form.colors,
+          bg: resolveBackground(form),
+        }),
         font: form.font,
         radius: form.radius,
+        surface: form.surface,
         layout: form.layout.trim() || undefined,
         style: form.style.trim() || undefined,
         effect: form.effect.trim() || undefined,
@@ -186,7 +232,7 @@ export function ThemeEditorClient({ theme, baseConfig, availableTemplates }: Pro
         </div>
       </header>
 
-      <main className="mx-auto grid max-w-6xl gap-6 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+      <main className="mx-auto grid max-w-7xl gap-6 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_390px]">
         <section className="space-y-6">
           <Panel title="Kimlik">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -230,25 +276,45 @@ export function ThemeEditorClient({ theme, baseConfig, availableTemplates }: Pro
             </p>
           </Panel>
 
-          <Panel title="Renkler">
+          <Panel title="Renk ve Tipografi">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <ColorField label="Arka Plan" value={form.colors.bg} onChange={(value) => setForm({ ...form, colors: { ...form.colors, bg: value } })} />
+              <ColorField label="Başlık" value={form.colors.heading} onChange={(value) => setForm({ ...form, colors: { ...form.colors, heading: value } })} />
               <ColorField label="Metin" value={form.colors.fg} onChange={(value) => setForm({ ...form, colors: { ...form.colors, fg: value } })} />
+              <ColorField label="Link" value={form.colors.link} onChange={(value) => setForm({ ...form, colors: { ...form.colors, link: value } })} />
               <ColorField label="Vurgu" value={form.colors.accent} onChange={(value) => setForm({ ...form, colors: { ...form.colors, accent: value } })} />
+              <ColorField label="Buton" value={form.colors.button} onChange={(value) => setForm({ ...form, colors: { ...form.colors, button: value } })} />
+              <ColorField label="Buton Metni" value={form.colors.buttonFg} onChange={(value) => setForm({ ...form, colors: { ...form.colors, buttonFg: value } })} />
               <ColorField label="Kart" value={form.colors.card} onChange={(value) => setForm({ ...form, colors: { ...form.colors, card: value } })} />
               <ColorField label="Kart Metni" value={form.colors.cardFg} onChange={(value) => setForm({ ...form, colors: { ...form.colors, cardFg: value } })} />
-              <ColorField label="Border" value={form.colors.border} onChange={(value) => setForm({ ...form, colors: { ...form.colors, border: value } })} />
-              <ColorField label="Muted" value={form.colors.muted} onChange={(value) => setForm({ ...form, colors: { ...form.colors, muted: value } })} />
+              <ColorField label="Çerçeve" value={form.colors.border} onChange={(value) => setForm({ ...form, colors: { ...form.colors, border: value } })} />
+              <ColorField label="İkincil Metin" value={form.colors.muted} onChange={(value) => setForm({ ...form, colors: { ...form.colors, muted: value } })} />
+              <ColorField label="Dekor Katmanı" value={form.colors.overlay} onChange={(value) => setForm({ ...form, colors: { ...form.colors, overlay: value } })} />
+            </div>
+            <div className="grid grid-cols-1 gap-4 border-t border-slate-100 pt-4 sm:grid-cols-2">
+              <SelectField label="Font" value={form.font} options={FONT_OPTIONS} onChange={(value) => setForm({ ...form, font: value as FormState["font"] })} />
+              <TextField label="Font Stili" value={form.style} onChange={(value) => setForm({ ...form, style: value })} placeholder="modern, editorial, luxury..." />
             </div>
           </Panel>
 
-          <Panel title="Görsel Sistem">
+          <Panel title="Arkaplan, Çerçeve ve Efekt">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <SelectField label="Font" value={form.font} options={FONT_OPTIONS} onChange={(value) => setForm({ ...form, font: value as FormState["font"] })} />
+              <SelectField
+                label="Arkaplan Tipi"
+                value={form.surface.background}
+                options={BACKGROUND_OPTIONS}
+                onChange={(value) => setForm({ ...form, surface: { ...form.surface, background: value as FormState["surface"]["background"] } })}
+              />
               <SelectField label="Radius" value={form.radius} options={RADIUS_OPTIONS} onChange={(value) => setForm({ ...form, radius: value as FormState["radius"] })} />
+              <ColorField label="Gradient Başlangıç" value={form.surface.gradientFrom} onChange={(value) => setForm({ ...form, surface: { ...form.surface, gradientFrom: value } })} />
+              <ColorField label="Gradient Bitiş" value={form.surface.gradientTo} onChange={(value) => setForm({ ...form, surface: { ...form.surface, gradientTo: value } })} />
+              <RangeField label="Gradient Açısı" value={form.surface.gradientAngle} min={0} max={360} step={15} suffix="°" onChange={(value) => setForm({ ...form, surface: { ...form.surface, gradientAngle: value } })} />
+              <RangeField label="Çerçeve Kalınlığı" value={form.surface.borderWidth} min={0} max={6} step={1} suffix="px" onChange={(value) => setForm({ ...form, surface: { ...form.surface, borderWidth: value } })} />
+              <SelectField label="Gölge" value={form.surface.shadow} options={SHADOW_OPTIONS} onChange={(value) => setForm({ ...form, surface: { ...form.surface, shadow: value as FormState["surface"]["shadow"] } })} />
+              <SelectField label="Boşluk Sistemi" value={form.surface.spacing} options={SPACING_OPTIONS} onChange={(value) => setForm({ ...form, surface: { ...form.surface, spacing: value as FormState["surface"]["spacing"] } })} />
+              <RangeField label="Kart Opaklığı" value={form.surface.cardOpacity} min={40} max={100} step={5} suffix="%" onChange={(value) => setForm({ ...form, surface: { ...form.surface, cardOpacity: value } })} />
+              <TextField label="Efekt" value={form.effect} onChange={(value) => setForm({ ...form, effect: value })} placeholder="glass, blur, glow..." />
               <TextField label="Layout" value={form.layout} onChange={(value) => setForm({ ...form, layout: value })} placeholder="compact, editorial..." />
-              <TextField label="Style" value={form.style} onChange={(value) => setForm({ ...form, style: value })} placeholder="flat, elevated..." />
-              <TextField label="Effect" value={form.effect} onChange={(value) => setForm({ ...form, effect: value })} placeholder="none, glass..." />
             </div>
           </Panel>
 
@@ -256,7 +322,7 @@ export function ThemeEditorClient({ theme, baseConfig, availableTemplates }: Pro
           {saved ? <p className="rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700">Tasarım kaydedildi.</p> : null}
         </section>
 
-        <aside className="lg:sticky lg:top-6 lg:self-start">
+        <aside className="lg:fixed lg:right-[max(1rem,calc((100vw-80rem)/2+1rem))] lg:top-24 lg:w-[360px]">
           <PreviewCard form={form} />
         </aside>
       </main>
@@ -372,32 +438,157 @@ function ColorField({ label, value, onChange }: { label: string; value: string; 
   );
 }
 
+function RangeField({
+  label,
+  value,
+  min,
+  max,
+  step,
+  suffix,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  suffix?: string;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <label className="block">
+      <span className="mb-1.5 flex items-center justify-between gap-3 text-sm font-medium text-slate-700">
+        {label}
+        <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs tabular-nums text-slate-600">
+          {value}
+          {suffix}
+        </span>
+      </span>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(event) => onChange(Number(event.target.value))}
+        className="w-full accent-slate-950"
+      />
+    </label>
+  );
+}
+
 function PreviewCard({ form }: { form: FormState }) {
-  const background = form.colors.bg || "#ffffff";
-  const surface = form.colors.card || "#ffffff";
+  const background = resolveBackground(form);
+  const surface = withOpacity(form.colors.card || "#ffffff", form.surface.cardOpacity);
   const text = form.colors.fg || "#111827";
+  const heading = form.colors.heading || text;
   const muted = form.colors.muted || "#64748b";
   const accent = form.colors.accent || "#2563eb";
+  const link = form.colors.link || accent;
+  const button = form.colors.button || accent;
+  const buttonFg = form.colors.buttonFg || "#ffffff";
+  const border = form.colors.border || "rgba(15,23,42,0.12)";
+  const overlay = form.colors.overlay || accent;
   const radius = form.radius === "full" ? 28 : form.radius === "lg" ? 18 : form.radius === "md" ? 12 : form.radius === "sm" ? 8 : 0;
+  const spacing = form.surface.spacing === "spacious" ? 18 : form.surface.spacing === "compact" ? 10 : 14;
+  const shadow = shadowValue(form.surface.shadow, accent);
+  const pattern =
+    form.surface.background === "pattern"
+      ? {
+          backgroundImage: `radial-gradient(circle at 18px 18px, ${withOpacity(overlay, 24)} 0 2px, transparent 2px)`,
+          backgroundSize: "34px 34px",
+        }
+      : {};
 
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-      <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">Token Önizleme</h2>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Canlı Stil Önizleme</h2>
+        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">{form.surface.background}</span>
+      </div>
       <div className="overflow-hidden rounded-[28px] border border-slate-900 bg-slate-900 p-3 shadow-xl">
-        <div style={{ background, color: text, borderRadius: 22 }} className="min-h-[520px] p-5">
-          <div style={{ background: surface, borderRadius: radius, borderColor: form.colors.border || "transparent" }} className="border p-4 shadow-sm">
-            <div className="mb-4 h-16 w-16 rounded-2xl" style={{ background: accent }} />
-            <h3 className="text-xl font-semibold">{form.name || "Tasarım Adı"}</h3>
-            <p className="mt-2 text-sm leading-6" style={{ color: muted }}>
-              Bu alan yalnızca renk, radius ve temel görsel token önizlemesidir. Blok dizilimi şablonda yönetilir.
+        <div
+          style={{ background, color: text, borderRadius: 22, fontFamily: FONT_MAP[form.font], ...pattern }}
+          className="relative max-h-[calc(100vh-190px)] min-h-[620px] overflow-y-auto p-4"
+        >
+          <div className="pointer-events-none absolute inset-x-4 top-4 h-1" style={{ background: withOpacity(overlay, 46), borderRadius: 999 }} />
+
+          <section
+            style={{ background: surface, borderRadius: radius + 8, borderColor: border, borderWidth: form.surface.borderWidth, boxShadow: shadow }}
+            className="relative border p-4"
+          >
+            <div className="flex items-center gap-3">
+              <div className="h-14 w-14 shrink-0 rounded-2xl" style={{ background: accent, borderRadius: radius }} />
+              <div className="min-w-0">
+                <h3 className="truncate text-xl font-semibold" style={{ color: heading }}>
+                  {form.name || "Tasarım Adı"}
+                </h3>
+                <p className="mt-1 text-xs font-medium uppercase tracking-wide" style={{ color: muted }}>
+                  {form.layout || "premium layout"}
+                </p>
+              </div>
+            </div>
+            <p className="mt-4 text-sm leading-6" style={{ color: text }}>
+              Başlık, metin, link, kart, çerçeve ve gölge tokenları aynı ekranda birlikte test edilir.
             </p>
-            <button
-              type="button"
-              className="mt-5 w-full rounded-lg px-4 py-2 text-sm font-semibold"
-              style={{ background: accent, color: form.colors.cardFg || "#ffffff", borderRadius: radius }}
-            >
-              Örnek Buton
-            </button>
+            <a className="mt-2 inline-flex text-sm font-semibold" style={{ color: link }} href="#preview-link">
+              Link rengi örneği
+            </a>
+          </section>
+
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            {["Menü", "Rezervasyon"].map((label, index) => (
+              <div
+                key={label}
+                style={{ background: surface, borderRadius: radius, borderColor: border, borderWidth: form.surface.borderWidth, boxShadow: shadow }}
+                className="border p-3"
+              >
+                <div className="mb-3 h-20" style={{ borderRadius: Math.max(radius - 2, 0), background: index === 0 ? withOpacity(accent, 18) : withOpacity(overlay, 18) }} />
+                <p className="text-sm font-semibold" style={{ color: heading }}>
+                  {label}
+                </p>
+                <p className="mt-1 text-xs" style={{ color: muted }}>
+                  Kart bloğu
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <section
+            style={{ background: surface, borderRadius: radius, borderColor: border, borderWidth: form.surface.borderWidth, boxShadow: shadow }}
+            className="mt-4 border"
+          >
+            {["Öne çıkan ürün", "Sosyal link", "İletişim satırı"].map((label, index) => (
+              <div
+                key={label}
+                className="flex items-center justify-between gap-3 border-b px-4 last:border-b-0"
+                style={{ borderColor: withOpacity(border, 55), paddingTop: spacing, paddingBottom: spacing }}
+              >
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: heading }}>
+                    {label}
+                  </p>
+                  <p className="mt-1 text-xs" style={{ color: muted }}>
+                    {index === 0 ? "Metin ve ikincil renk" : "Çizgi, boşluk ve radius"}
+                  </p>
+                </div>
+                <span className="h-8 w-8 shrink-0 rounded-full" style={{ background: index === 1 ? link : accent }} />
+              </div>
+            ))}
+          </section>
+
+          <button
+            type="button"
+            className="mt-4 w-full px-4 py-3 text-sm font-semibold"
+            style={{ background: button, color: buttonFg, borderRadius: radius, boxShadow: shadow }}
+          >
+            Birincil Buton
+          </button>
+
+          <div className="mt-4 flex gap-2">
+            {[accent, link, heading, muted].map((color, index) => (
+              <span key={`${color}-${index}`} className="h-9 flex-1 rounded-lg border border-white/20" style={{ background: color }} />
+            ))}
           </div>
         </div>
       </div>
@@ -409,12 +600,53 @@ function compactColors(colors: FormState["colors"]): ThemeConfig["colors"] {
   return {
     bg: colors.bg || "#ffffff",
     fg: colors.fg || "#111827",
+    ...(colors.heading ? { heading: colors.heading } : {}),
+    ...(colors.link ? { link: colors.link } : {}),
     accent: colors.accent || "#2563eb",
+    ...(colors.button ? { button: colors.button } : {}),
+    ...(colors.buttonFg ? { buttonFg: colors.buttonFg } : {}),
     ...(colors.card ? { card: colors.card } : {}),
     ...(colors.cardFg ? { cardFg: colors.cardFg } : {}),
     ...(colors.border ? { border: colors.border } : {}),
     ...(colors.muted ? { muted: colors.muted } : {}),
+    ...(colors.overlay ? { overlay: colors.overlay } : {}),
   };
+}
+
+function resolveBackground(form: FormState) {
+  if (form.surface.background === "gradient") {
+    return `linear-gradient(${form.surface.gradientAngle}deg, ${form.surface.gradientFrom}, ${form.surface.gradientTo})`;
+  }
+  return form.colors.bg || "#ffffff";
+}
+
+function shadowValue(shadow: FormState["surface"]["shadow"], accent: string) {
+  switch (shadow) {
+    case "none":
+      return "none";
+    case "medium":
+      return "0 18px 36px rgba(15, 23, 42, 0.18)";
+    case "strong":
+      return "0 24px 60px rgba(15, 23, 42, 0.28)";
+    case "glow":
+      return `0 18px 46px ${withOpacity(accent, 32)}`;
+    case "soft":
+    default:
+      return "0 10px 26px rgba(15, 23, 42, 0.12)";
+  }
+}
+
+function withOpacity(color: string, opacity: number) {
+  const hex = color.trim();
+  const match = /^#?([0-9a-fA-F]{6})$/.exec(hex);
+  if (!match) return color;
+
+  const raw = match[1];
+  const red = parseInt(raw.slice(0, 2), 16);
+  const green = parseInt(raw.slice(2, 4), 16);
+  const blue = parseInt(raw.slice(4, 6), 16);
+
+  return `rgba(${red}, ${green}, ${blue}, ${Math.max(0, Math.min(opacity, 100)) / 100})`;
 }
 
 function compactConfig(config: ThemeConfig & { templateId?: string; templateVersion?: number }) {

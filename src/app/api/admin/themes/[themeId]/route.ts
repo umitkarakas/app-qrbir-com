@@ -38,7 +38,7 @@ export async function GET(
 
 const PatchSchema = z.object({
   name: z.string().min(1).max(100).optional(),
-  description: z.string().max(500).optional(),
+  description: z.string().max(500).optional().nullable(),
   status: z.enum(["draft", "active", "archived"]).optional(),
   isFree: z.boolean().optional(),
   isPremium: z.boolean().optional(),

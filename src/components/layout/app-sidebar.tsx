@@ -3,8 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  Blocks,
   LayoutDashboard,
+  LayoutTemplate,
   PlusCircle,
+  Palette,
   User,
   ShieldCheck,
   LogOut,
@@ -34,10 +37,10 @@ const ADMIN_NAV = [
     label: "Tasarım",
     icon: Layers,
     children: [
-      { href: "/admin/blocks", label: "Bloklar" },
-      { href: "/admin/templates", label: "Şablonlar" },
-      { href: "/admin/themes", label: "Tasarımlar" },
-      { href: "/admin/themes/new", label: "Yeni Tasarım" },
+      { href: "/admin/blocks", label: "Bloklar", icon: Blocks },
+      { href: "/admin/templates", label: "Şablonlar", icon: LayoutTemplate },
+      { href: "/admin/themes", label: "Tasarımlar", icon: Palette },
+      { href: "/admin/themes/new", label: "Yeni Tasarım", icon: PlusCircle },
     ],
   },
   {
@@ -201,7 +204,10 @@ export function AppSidebar({ isAdmin, userName, userEmail }: AppSidebarProps) {
                 {ADMIN_NAV.map((item) => {
                   if ("children" in item && item.children) {
                     const groupOpen = openGroups[item.label] ?? false;
-                    const anyChildActive = item.children.some((c) => pathname.startsWith(c.href));
+                    const activeChildHref = item.children
+                      .filter((c) => pathname === c.href || pathname.startsWith(c.href + "/"))
+                      .sort((a, b) => b.href.length - a.href.length)[0]?.href;
+                    const anyChildActive = Boolean(activeChildHref);
                     const GroupIcon = item.icon;
                     return (
                       <div key={item.label}>
@@ -247,7 +253,8 @@ export function AppSidebar({ isAdmin, userName, userEmail }: AppSidebarProps) {
                         {groupOpen && (
                           <div style={{ display: "flex", flexDirection: "column", gap: 1, paddingLeft: 26, marginTop: 2 }}>
                             {item.children.map((child) => {
-                              const childActive = pathname === child.href || pathname.startsWith(child.href + "/");
+                              const childActive = activeChildHref === child.href;
+                              const ChildIcon = child.icon;
                               return (
                                 <Link
                                   key={child.href}
@@ -255,6 +262,7 @@ export function AppSidebar({ isAdmin, userName, userEmail }: AppSidebarProps) {
                                   style={{
                                     display: "flex",
                                     alignItems: "center",
+                                    gap: 8,
                                     height: 34,
                                     padding: "0 10px",
                                     borderRadius: 8,
@@ -266,7 +274,14 @@ export function AppSidebar({ isAdmin, userName, userEmail }: AppSidebarProps) {
                                     transition: "background var(--duration-base)",
                                   }}
                                 >
-                                  {child.label}
+                                  <ChildIcon
+                                    size={14}
+                                    style={{
+                                      color: childActive ? "var(--color-accent-violet-deep)" : "var(--color-fg-4)",
+                                      flexShrink: 0,
+                                    }}
+                                  />
+                                  <span>{child.label}</span>
                                 </Link>
                               );
                             })}

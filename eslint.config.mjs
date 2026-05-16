@@ -20,6 +20,13 @@ const eslintConfig = [
       "next-env.d.ts",
     ],
   },
+  {
+    rules: {
+      // Theme renderers and upload previews use dynamic user-provided URLs
+      // that cannot all be pre-configured for Next.js Image optimization.
+      "@next/next/no-img-element": "warn",
+    },
+  },
 ];
 
 export default eslintConfig;

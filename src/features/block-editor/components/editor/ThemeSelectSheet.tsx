@@ -194,7 +194,7 @@ function AdminThemePreview({ theme }: { theme: Theme | null }) {
     <div
       className="overflow-hidden rounded-lg border border-slate-100 p-4"
       style={{
-        backgroundColor: colors.background,
+        background: colors.background,
         color: colors.text,
         borderColor: colors.border,
         boxShadow: style.shadow,

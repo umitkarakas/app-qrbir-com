@@ -107,7 +107,7 @@ function normalizeThemeConfig(value: unknown): ThemeConfig {
   const colors = readRecord(stored.colors);
   const surface = readRecord(stored.surface);
   const accent = stringValue(colors.accent) || "#2563eb";
-  const bg = solidColor(stringValue(colors.bg) || "#ffffff");
+  const bg = stringValue(colors.bg) || "#ffffff";
   const text = stringValue(colors.fg) || "#111827";
   const radius = stringValue(stored.radius);
   const shadow = stringValue(surface.shadow);

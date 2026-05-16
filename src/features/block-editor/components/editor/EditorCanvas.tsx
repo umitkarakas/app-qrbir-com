@@ -55,7 +55,7 @@ export default function EditorCanvas() {
           className="flex-1 bg-white rounded-2xl overflow-hidden shadow-xl"
           style={{
             ...themeVariables,
-            backgroundColor: themeConfig?.colors.background || '#FFFFFF',
+            background: themeConfig?.colors.background || '#FFFFFF',
             color: themeConfig?.colors.text || '#111827',
             fontFamily: themeConfig?.fonts.body || 'Inter, sans-serif',
           } as React.CSSProperties}

@@ -375,3 +375,29 @@ input:-webkit-autofill:focus {
   -webkit-text-fill-color: #111827;
   transition: background-color 9999s ease-in-out 0s;
 }
+
+/* ── Block editor theme utilities ── */
+@utility theme-primary {
+  background-color: var(--theme-primary);
+}
+@utility theme-surface {
+  background-color: var(--theme-surface);
+}
+@utility theme-border {
+  border-color: var(--theme-border);
+}
+@utility theme-text {
+  color: var(--theme-text);
+}
+@utility theme-text-secondary {
+  color: var(--theme-text-secondary);
+}
+@utility theme-primary-text {
+  color: var(--theme-primary);
+}
+@utility theme-rounded {
+  border-radius: var(--theme-border-radius);
+}
+@utility theme-shadow {
+  box-shadow: var(--theme-shadow);
+}

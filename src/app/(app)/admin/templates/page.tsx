@@ -7,6 +7,7 @@ import { desc } from "drizzle-orm";
 import Link from "next/link";
 import { AppHeader } from "@/components/layout/app-header";
 import { TemplateActions } from "./template-actions";
+import { getTemplateContractFromMetadata } from "@/features/block-editor/lib/template-contract";
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "")
   .split(",")
@@ -63,38 +64,60 @@ export default async function AdminTemplatesPage() {
                 <tr>
                   <th className="text-left px-4 py-3 font-medium text-gray-600">Şablon</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600">Tip</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">Contract</th>
                   <th className="text-right px-4 py-3 font-medium text-gray-600">Durum</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {list.map((template) => (
-                  <tr key={template.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-3">
-                      <Link
-                        href={`/admin/templates/${template.id}/edit`}
-                        className="font-medium text-gray-900 hover:text-violet-700"
-                      >
-                        {template.name}
-                      </Link>
-                      <div className="text-xs text-gray-500 mt-0.5">{template.slug}</div>
-                      {template.description ? (
-                        <div className="text-xs text-gray-400 mt-1 max-w-xl">
-                          {template.description}
+                {list.map((template) => {
+                  const contract = getTemplateContractFromMetadata(template.metadata);
+                  const editableCount = contract?.userEditable.blocks.length ?? 0;
+                  return (
+                    <tr key={template.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <Link
+                            href={`/admin/templates/${template.id}/edit`}
+                            className="font-medium text-gray-900 hover:text-violet-700"
+                          >
+                            {template.name}
+                          </Link>
+                          <Link
+                            href={`/admin/templates/${template.id}/edit`}
+                            className="text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+                          >
+                            Düzenle
+                          </Link>
                         </div>
-                      ) : null}
-                    </td>
-                    <td className="px-4 py-3 text-gray-600">
-                      {PRODUCT_TYPE_LABELS[template.productType] ?? template.productType}
-                    </td>
-                    <td className="px-4 py-3">
-                      <TemplateActions
-                        id={template.id}
-                        isActive={template.isActive}
-                        isPremium={template.isPremium}
-                      />
-                    </td>
-                  </tr>
-                ))}
+                        <div className="text-xs text-gray-500 mt-0.5">{template.slug}</div>
+                        {template.description ? (
+                          <div className="text-xs text-gray-400 mt-1 max-w-xl">
+                            {template.description}
+                          </div>
+                        ) : null}
+                      </td>
+                      <td className="px-4 py-3 text-gray-600">
+                        {PRODUCT_TYPE_LABELS[template.productType] ?? template.productType}
+                      </td>
+                      <td className="px-4 py-3">
+                        {contract ? (
+                          <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            ✓ {editableCount} alan
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-400">—</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        <TemplateActions
+                          id={template.id}
+                          isActive={template.isActive}
+                          isPremium={template.isPremium}
+                        />
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

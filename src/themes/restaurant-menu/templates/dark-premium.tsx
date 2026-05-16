@@ -195,6 +195,7 @@ export const darkPremium: ThemeTemplate<RestaurantMenuV1Type> = {
                       border: `3px solid ${colors.card ?? "#252545"}`,
                     }}>
                       {item.imageUrl ? (
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={item.imageUrl} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                       ) : (
                         <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28 }}>
@@ -254,6 +255,7 @@ export const darkPremium: ThemeTemplate<RestaurantMenuV1Type> = {
                     {/* Image */}
                     <div style={{ width: 60, height: 60, borderRadius: br, overflow: "hidden", flexShrink: 0, background: "rgba(255,255,255,0.08)" }}>
                       {item.imageUrl ? (
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={item.imageUrl} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                       ) : (
                         <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>🍽️</div>

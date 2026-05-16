@@ -6,7 +6,6 @@ import {
   ArrowLeft,
   Check,
   Loader2,
-  Palette,
   Plus,
   Save,
   Settings2,
@@ -16,7 +15,6 @@ import { EditorProvider, useEditor } from "@/features/block-editor/contexts/Edit
 import AddBlockSheet from "@/features/block-editor/components/editor/AddBlockSheet";
 import EditBlockSheet from "@/features/block-editor/components/editor/EditBlockSheet";
 import PreviewSheet from "@/features/block-editor/components/editor/PreviewSheet";
-import ThemeSelectSheet from "@/features/block-editor/components/editor/ThemeSelectSheet";
 import ControlPanelSheet from "@/features/block-editor/components/editor/ControlPanelSheet";
 import EditorCanvas from "@/features/block-editor/components/editor/EditorCanvas";
 import EditorTour from "@/features/block-editor/components/editor/EditorTour";
@@ -50,10 +48,8 @@ function EditorShell({ project }: { project: EditorProject }) {
     isDirty,
     isSaving,
     save,
-    themes,
   } = useEditor();
   const [addSheetOpen, setAddSheetOpen] = useState(false);
-  const [themeSheetOpen, setThemeSheetOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [controlPanelOpen, setControlPanelOpen] = useState(false);
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
@@ -130,16 +126,7 @@ function EditorShell({ project }: { project: EditorProject }) {
 
       <footer className="fixed bottom-0 left-0 right-0 z-40 px-4 pb-4 pt-2 pointer-events-none">
         <div className="max-w-lg mx-auto relative flex items-end justify-center pointer-events-auto">
-          <div className="flex items-center bg-white rounded-[28px] shadow-lg shadow-slate-900/10 border border-slate-100 px-6 py-3 gap-16 sm:gap-20">
-            <button
-              onClick={() => setThemeSheetOpen(true)}
-              className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-700 transition-colors px-3 disabled:opacity-50"
-              disabled={themes.length === 0}
-            >
-              <Palette className="w-6 h-6" />
-              <span className="text-[10px] font-medium">Tasarım</span>
-            </button>
-
+          <div className="flex items-center bg-white rounded-[28px] shadow-lg shadow-slate-900/10 border border-slate-100 px-8 py-3">
             <button
               onClick={handleSave}
               disabled={!isDirty || isSaving}
@@ -162,7 +149,7 @@ function EditorShell({ project }: { project: EditorProject }) {
                 {showSaveSuccess ? "Tamam" : "Kaydet"}
               </span>
               {isDirty && !showSaveSuccess && (
-                <span className="absolute top-2 right-[calc(50%-70px)] sm:right-[calc(50%-82px)] w-2 h-2 bg-emerald-500 rounded-full" />
+                <span className="absolute right-[calc(50%-34px)] top-2 h-2 w-2 rounded-full bg-emerald-500" />
               )}
             </button>
           </div>
@@ -177,7 +164,6 @@ function EditorShell({ project }: { project: EditorProject }) {
       </footer>
 
       <AddBlockSheet isOpen={addSheetOpen} onClose={() => setAddSheetOpen(false)} />
-      <ThemeSelectSheet isOpen={themeSheetOpen} onClose={() => setThemeSheetOpen(false)} />
       <EditBlockSheet />
       <PreviewSheet isOpen={previewOpen} onClose={() => setPreviewOpen(false)} />
       <ControlPanelSheet

@@ -7,6 +7,7 @@ import {
   ExternalLink,
   FileCode2,
   Loader2,
+  Palette,
   Plus,
   Save,
   X,
@@ -15,6 +16,7 @@ import { useCallback, useState } from "react";
 import { EditorProvider, useEditor } from "@/features/block-editor/contexts/EditorContext";
 import AddBlockSheet from "@/features/block-editor/components/editor/AddBlockSheet";
 import EditBlockSheet from "@/features/block-editor/components/editor/EditBlockSheet";
+import ThemeSelectSheet from "@/features/block-editor/components/editor/ThemeSelectSheet";
 import EditorCanvas from "@/features/block-editor/components/editor/EditorCanvas";
 import { buildBlockEditorContent } from "@/features/block-editor/types/content";
 import type { Block, Site, Theme } from "@/features/block-editor/types/database";
@@ -82,8 +84,9 @@ export function TemplateEditorClient({ template, site, blocks, themes }: Props) 
 }
 
 function TemplateEditorShell({ template }: { template: TemplateEditorMeta }) {
-  const { site, blocks, isDirty, isSaving, save } = useEditor();
+  const { site, blocks, isDirty, isSaving, save, themes } = useEditor();
   const [addSheetOpen, setAddSheetOpen] = useState(false);
+  const [themeSheetOpen, setThemeSheetOpen] = useState(false);
   const [contractSheetOpen, setContractSheetOpen] = useState(false);
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -158,7 +161,17 @@ function TemplateEditorShell({ template }: { template: TemplateEditorMeta }) {
 
       <footer className="pointer-events-none fixed bottom-0 left-0 right-0 z-40 px-4 pb-4 pt-2">
         <div className="pointer-events-auto relative mx-auto flex max-w-lg items-end justify-center">
-          <div className="flex items-center gap-20 rounded-[28px] border border-slate-100 bg-white px-8 py-3 shadow-lg shadow-slate-900/10">
+          <div className="flex items-center gap-16 rounded-[28px] border border-slate-100 bg-white px-6 py-3 shadow-lg shadow-slate-900/10 sm:gap-20">
+            <button
+              onClick={() => setThemeSheetOpen(true)}
+              className="flex flex-col items-center gap-1 px-3 text-slate-400 transition-colors hover:text-slate-700 disabled:opacity-50"
+              disabled={themes.length === 0}
+              title="Tasarım seç"
+            >
+              <Palette className="h-6 w-6" />
+              <span className="text-[10px] font-medium">Tasarım</span>
+            </button>
+
             <button
               onClick={handleSave}
               disabled={!isDirty || isSaving}
@@ -174,6 +187,9 @@ function TemplateEditorShell({ template }: { template: TemplateEditorMeta }) {
                 <Save className="h-6 w-6" />
               )}
               <span className="text-[10px] font-medium">{showSaveSuccess ? "Tamam" : "Kaydet"}</span>
+              {isDirty && !showSaveSuccess && (
+                <span className="absolute right-[calc(50%-70px)] top-2 h-2 w-2 rounded-full bg-emerald-500 sm:right-[calc(50%-82px)]" />
+              )}
             </button>
           </div>
 
@@ -187,6 +203,7 @@ function TemplateEditorShell({ template }: { template: TemplateEditorMeta }) {
       </footer>
 
       <AddBlockSheet isOpen={addSheetOpen} onClose={() => setAddSheetOpen(false)} />
+      <ThemeSelectSheet isOpen={themeSheetOpen} onClose={() => setThemeSheetOpen(false)} />
       <EditBlockSheet />
       <ContractEditorSheet
         templateId={template.id}

@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { projects, projectContents, themes } from "@/db/schema";
+import { projects, projectContents, themes, templates } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
@@ -12,8 +12,12 @@ import {
   createBlocksFromContent,
   createEditorSite,
   createThemeList,
+  isBlockEditorContent,
+  type BlockEditorContent,
   type EditorProject,
 } from "@/features/block-editor/types/content";
+import { getTemplateContractFromMetadata } from "@/features/block-editor/lib/template-contract";
+import { ContractForm } from "@/features/contract-form/ContractForm";
 
 export default async function EditPage({
   params,
@@ -38,6 +42,7 @@ export default async function EditPage({
       viewCount: projects.viewCount,
       qrCount: projects.qrCount,
       userId: projects.userId,
+      templateId: projects.templateId,
       themeConfig: themes.themeConfigJson,
       themeName: themes.name,
     })
@@ -87,6 +92,35 @@ export default async function EditPage({
     initialContent = mod.defaultContent;
   }
 
+  // Contract-driven form path (Faz B)
+  if (row.templateId && isBlockEditorContent(initialContent)) {
+    const [template] = await db
+      .select({ metadata: templates.metadata })
+      .from(templates)
+      .where(eq(templates.id, row.templateId))
+      .limit(1);
+
+    const contract = template ? getTemplateContractFromMetadata(template.metadata) : null;
+
+    if (contract) {
+      return (
+        <ContractForm
+          project={{
+            id: row.id,
+            title: row.title,
+            slug: row.slug,
+            subdomainType: row.subdomainType,
+            status: row.status,
+          }}
+          contract={contract}
+          initialContent={initialContent as BlockEditorContent}
+        />
+      );
+    }
+    // contract eksik veya parse edilemedi → legacy block-editor'a düş
+  }
+
+  // Legacy block editor path
   const project: EditorProject = {
     id: row.id,
     title: row.title,

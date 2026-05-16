@@ -21,23 +21,13 @@ export default function NewProjectPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  async function handleCreate(e: React.FormEvent) {
+  function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     if (!selected) return;
-    setError(""); setLoading(true);
-    const res = await fetch("/api/projects", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ projectType: selected, title }),
-    });
-    if (!res.ok) {
-      setLoading(false);
-      const data = await res.json().catch(() => ({}));
-      setError(data.error ?? "Proje oluşturulamadı.");
-      return;
-    }
-    const project = await res.json();
-    router.push(`/projects/${project.id}/theme`);
+    setError("");
+    setLoading(true);
+    const params = new URLSearchParams({ type: selected, title: title.trim() });
+    router.push(`/new/template?${params.toString()}`);
   }
 
   const selectedProduct = PRODUCT_TYPES.find((p) => p.type === selected);
@@ -125,7 +115,7 @@ export default function NewProjectPage() {
               className="lum-cta"
               style={{ justifyContent: "center", opacity: (loading || !title.trim()) ? 0.6 : 1 }}
             >
-              {loading ? "Oluşturuluyor…" : "Projeyi Oluştur →"}
+              {loading ? "Yönlendiriliyor…" : "Şablon Seç →"}
             </button>
           </form>
         </div>

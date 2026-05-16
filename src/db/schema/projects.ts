@@ -57,6 +57,8 @@ export const projects = pgTable(
     subdomainType: subdomainTypeEnum("subdomain_type").notNull(),
     status: projectStatusEnum("status").notNull().default("draft"),
     themeId: integer("theme_id"),
+    // FK constraint added in migration (circular schema import with templates.ts)
+    templateId: integer("template_id"),
     planId: integer("plan_id"),
     isFree: boolean("is_free").notNull().default(true),
     isPremium: boolean("is_premium").notNull().default(false),

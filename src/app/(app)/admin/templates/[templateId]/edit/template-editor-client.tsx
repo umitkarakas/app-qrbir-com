@@ -46,7 +46,7 @@ export function TemplateEditorClient({ template, site, blocks, themes }: Props) 
   const handleSaveContent = useCallback(
     async (nextSite: Site, nextBlocks: Block[]) => {
       const content = buildBlockEditorContent(nextSite, nextBlocks);
-      const themeId = nextSite.theme_id ? Number(nextSite.theme_id) : template.themeId;
+      const themeId = nextSite.theme_id ? Number(nextSite.theme_id) : null;
       const res = await fetch(`/api/admin/templates/${template.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -66,7 +66,7 @@ export function TemplateEditorClient({ template, site, blocks, themes }: Props) 
         throw new Error(data?.error ?? "Şablon kaydedilemedi");
       }
     },
-    [template.id, template.themeId, template.version]
+    [template.id, template.version]
   );
 
   return (

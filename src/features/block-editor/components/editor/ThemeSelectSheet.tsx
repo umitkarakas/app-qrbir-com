@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { X, Search, Palette, Check, Lock, Eye, EyeOff } from 'lucide-react';
+import { X, Search, Palette, Check, Lock } from 'lucide-react';
 import { useEditor } from '../../contexts/EditorContext';
 import type { Theme } from '../../types/database';
 import type { ThemeConfig } from '../../types/theme';
@@ -20,7 +20,6 @@ export default function ThemeSelectSheet({ isOpen, onClose }: ThemeSelectSheetPr
   const { themes, selectedTheme, selectTheme } = useEditor();
   const [search, setSearch] = useState('');
   const [hoveredTheme, setHoveredTheme] = useState<Theme | null>(null);
-  const [showPreview, setShowPreview] = useState(false);
 
   const filteredThemes = useMemo(() => {
     if (!search.trim()) return themes;
@@ -53,30 +52,23 @@ export default function ThemeSelectSheet({ isOpen, onClose }: ThemeSelectSheetPr
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/40 z-40 animate-in fade-in duration-200" onClick={onClose} />
-      <div className="fixed inset-4 lg:inset-8 z-50 animate-in fade-in duration-300">
-        <div className="bg-white rounded-2xl h-full flex flex-col lg:flex-row shadow-2xl overflow-hidden">
-          <div className="flex-1 flex flex-col min-w-0 lg:max-w-md lg:border-r border-slate-200">
+      <div className="fixed inset-0 z-40 bg-slate-950/35 animate-in fade-in duration-200" onClick={onClose} />
+      <aside className="fixed bottom-0 left-0 top-0 z-50 w-full max-w-[380px] animate-in slide-in-from-left duration-300">
+        <div className="flex h-full flex-col border-r border-slate-200 bg-white shadow-2xl">
             <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-              <h2 className="text-lg font-semibold text-slate-900">Tasarim Sec</h2>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setShowPreview(!showPreview)}
-                  className="lg:hidden p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-                  title={showPreview ? 'Listeyi goster' : 'Onizlemeyi goster'}
-                >
-                  {showPreview ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-                <button
-                  onClick={onClose}
-                  className="p-2 -mr-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">Tasarim Sec</h2>
+                <p className="mt-1 text-xs text-slate-500">Secim onizlemeye uygulanir, Kaydet ile sabitlenir.</p>
               </div>
+              <button
+                onClick={onClose}
+                className="p-2 -mr-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
-            <div className={`flex-1 flex flex-col overflow-hidden ${showPreview ? 'hidden lg:flex' : 'flex'}`}>
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
               <div className="px-5 py-3 border-b border-slate-100">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
@@ -96,7 +88,7 @@ export default function ThemeSelectSheet({ isOpen, onClose }: ThemeSelectSheetPr
                     onClick={() => handleSelectTheme(null)}
                     onMouseEnter={() => setHoveredTheme(null)}
                     onMouseLeave={() => setHoveredTheme(null)}
-                    className={`w-full p-4 rounded-xl border-2 transition-all ${
+                    className={`w-full rounded-xl border-2 p-3 transition-all ${
                       !selectedTheme
                         ? 'border-slate-900 bg-slate-50'
                         : 'border-slate-200 hover:border-slate-300'
@@ -142,47 +134,14 @@ export default function ThemeSelectSheet({ isOpen, onClose }: ThemeSelectSheetPr
               </div>
             </div>
 
-            <div className={`flex-1 lg:hidden p-4 ${showPreview ? 'block' : 'hidden'}`}>
-              <div className="h-full bg-slate-100 rounded-xl overflow-hidden">
-                <ThemePreviewPanel config={previewConfig} />
-              </div>
-            </div>
-          </div>
-
-          <div className="hidden lg:flex flex-1 bg-slate-100 p-6 items-center justify-center">
-            <div className="w-full max-w-sm">
-              <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-                <div className="px-4 py-2 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
-                  <div className="flex gap-1.5">
-                    <div className="w-3 h-3 rounded-full bg-red-400" />
-                    <div className="w-3 h-3 rounded-full bg-yellow-400" />
-                    <div className="w-3 h-3 rounded-full bg-green-400" />
-                  </div>
-                  <div className="flex-1 text-center">
-                    <span className="text-xs text-slate-400">qr1.site/preview</span>
-                  </div>
-                </div>
-                <div className="max-h-[60vh] overflow-y-auto">
-                  <ThemePreviewPanel config={previewConfig} />
-                </div>
-              </div>
-              <p className="text-center text-sm text-slate-500 mt-4">
-                {hoveredTheme ? (
-                  <>
-                    Onizleme: <span className="font-medium text-slate-700">{hoveredTheme.name}</span>
-                  </>
-                ) : selectedTheme ? (
-                  <>
-                    Secili tema: <span className="font-medium text-slate-700">{selectedTheme.name}</span>
-                  </>
-                ) : (
-                  'Varsayilan tema'
-                )}
+            <div className="border-t border-slate-100 bg-slate-50 p-4">
+              <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-400">
+                {hoveredTheme ? `Onizleme: ${hoveredTheme.name}` : selectedTheme ? `Secili: ${selectedTheme.name}` : 'Varsayilan tema'}
               </p>
+              <ThemePreviewPanel config={previewConfig} compact />
             </div>
           </div>
-        </div>
-      </div>
+      </aside>
     </>
   );
 }
@@ -204,7 +163,7 @@ function ThemeOption({ theme, isSelected, isLocked, onSelect, onHover }: ThemeOp
       onMouseEnter={() => onHover(theme)}
       onMouseLeave={() => onHover(null)}
       disabled={isLocked}
-      className={`relative w-full p-4 rounded-xl border-2 transition-all text-left ${
+      className={`relative w-full rounded-xl border-2 p-3 text-left transition-all ${
         isLocked
           ? 'opacity-60 cursor-not-allowed'
           : isSelected
@@ -219,8 +178,12 @@ function ThemeOption({ theme, isSelected, isLocked, onSelect, onHover }: ThemeOp
           </div>
         </div>
       )}
-      <div className="flex items-center gap-3">
-        <ThemePreviewMini config={config} />
+      <div className="space-y-3">
+        <div className="overflow-hidden rounded-lg border border-slate-100">
+          <ThemePreviewPanel config={config} compact />
+        </div>
+        <div className="flex items-center gap-3">
+          <ThemePreviewMini config={config} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h3 className="font-semibold text-slate-900 truncate">{theme.name}</h3>
@@ -238,6 +201,7 @@ function ThemeOption({ theme, isSelected, isLocked, onSelect, onHover }: ThemeOp
             <Check className="w-4 h-4 text-white" />
           </div>
         )}
+        </div>
       </div>
     </button>
   );

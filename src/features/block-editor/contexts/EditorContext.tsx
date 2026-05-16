@@ -76,7 +76,9 @@ export function EditorProvider({
   const [previewMode, setPreviewMode] = useState<"mobile" | "desktop">("mobile");
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [selectedTheme, setSelectedTheme] = useState<Theme | null>(null);
+  const [selectedTheme, setSelectedTheme] = useState<Theme | null>(
+    () => themes.find((item) => item.id === initialSite.theme_id) ?? null
+  );
 
   const loadSite = useCallback(async () => undefined, []);
   const selectBlock = useCallback((id: string | null) => {

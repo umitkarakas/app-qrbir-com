@@ -7,8 +7,6 @@ import { useMemo, useState } from "react";
 import { FONT_MAP } from "@/types/theme";
 import type { ThemeConfig, ThemeSurface } from "@/types/theme";
 
-type SiblingTheme = { id: number; name: string; config: ThemeConfig };
-
 type ThemeEditorMeta = {
   id: number;
   name: string;
@@ -27,7 +25,7 @@ type Props = {
   theme: ThemeEditorMeta;
   baseConfig: ThemeConfig;
   availableTemplates: { id: string; name: string; version: number }[];
-  siblingThemes?: SiblingTheme[];
+  adminTemplates?: { id: number; name: string }[];
 };
 
 type FormState = {
@@ -101,12 +99,13 @@ const SPACING_OPTIONS: { value: FormState["surface"]["spacing"]; label: string }
   { value: "spacious", label: "Ferah" },
 ];
 
-export function ThemeEditorClient({ theme, baseConfig, availableTemplates, siblingThemes = [] }: Props) {
+export function ThemeEditorClient({ theme, baseConfig, availableTemplates, adminTemplates = [] }: Props) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
-  const [previewThemeId, setPreviewThemeId] = useState<number | null>(null);
+  const [selectedAdminTemplateId, setSelectedAdminTemplateId] = useState<number | null>(null);
+  const [iframeKey, setIframeKey] = useState(0);
   const [form, setForm] = useState<FormState>(() => ({
     name: theme.name,
     description: theme.description ?? "",
@@ -151,50 +150,6 @@ export function ThemeEditorClient({ theme, baseConfig, availableTemplates, sibli
     [availableTemplates, form.templateId]
   );
 
-  const previewForm = useMemo((): FormState => {
-    if (previewThemeId === null) return form;
-    const sibling = siblingThemes.find((t) => t.id === previewThemeId);
-    if (!sibling) return form;
-    const c = sibling.config;
-    return {
-      name: sibling.name,
-      description: "",
-      status: "active",
-      isFree: false,
-      isPremium: false,
-      previewImageUrl: "",
-      templateId: "",
-      colors: {
-        bg: c.colors.bg || "#ffffff",
-        fg: c.colors.fg || "#111827",
-        heading: c.colors.heading ?? c.colors.fg ?? "#111827",
-        link: c.colors.link ?? c.colors.accent ?? "#2563eb",
-        accent: c.colors.accent || "#2563eb",
-        button: c.colors.button ?? c.colors.accent ?? "#2563eb",
-        buttonFg: c.colors.buttonFg ?? "#ffffff",
-        card: c.colors.card ?? "",
-        cardFg: c.colors.cardFg ?? "",
-        border: c.colors.border ?? "",
-        muted: c.colors.muted ?? "#64748b",
-        overlay: c.colors.overlay ?? "",
-      },
-      font: c.font ?? "sans",
-      radius: c.radius ?? "md",
-      surface: {
-        borderWidth: c.surface?.borderWidth ?? 1,
-        shadow: c.surface?.shadow ?? "soft",
-        background: c.surface?.background ?? (c.colors.bg.includes("gradient") ? "gradient" : "solid"),
-        gradientFrom: c.surface?.gradientFrom ?? "#3b82f6",
-        gradientTo: c.surface?.gradientTo ?? "#8b5cf6",
-        gradientAngle: c.surface?.gradientAngle ?? 135,
-        cardOpacity: c.surface?.cardOpacity ?? 100,
-        spacing: c.surface?.spacing ?? "comfortable",
-      },
-      layout: c.layout ?? "",
-      style: c.style ?? "",
-      effect: c.effect ?? "",
-    };
-  }, [previewThemeId, form, siblingThemes]);
 
   async function handleSave() {
     setSaving(true);
@@ -232,6 +187,7 @@ export function ThemeEditorClient({ theme, baseConfig, availableTemplates, sibli
       const data = await res.json().catch(() => null);
       if (!res.ok) throw new Error(data?.error ?? "Tasarım kaydedilemedi");
       setSaved(true);
+      setIframeKey((k) => k + 1);
       router.refresh();
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Tasarım kaydedilemedi");
@@ -372,21 +328,37 @@ export function ThemeEditorClient({ theme, baseConfig, availableTemplates, sibli
         </section>
 
         <aside className="lg:fixed lg:right-[max(1rem,calc((100vw-80rem)/2+1rem))] lg:top-24 lg:w-[360px]">
-          {siblingThemes.length > 0 && (
+          {adminTemplates.length > 0 && (
             <div className="mb-3">
               <select
-                value={previewThemeId ?? ""}
-                onChange={(e) => setPreviewThemeId(e.target.value ? Number(e.target.value) : null)}
+                value={selectedAdminTemplateId ?? ""}
+                onChange={(e) => setSelectedAdminTemplateId(e.target.value ? Number(e.target.value) : null)}
                 className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
               >
-                <option value="">— Bu tema (mevcut) —</option>
-                {siblingThemes.map((t) => (
+                <option value="">— Şablon seç (gerçek içerik önizleme) —</option>
+                {adminTemplates.map((t) => (
                   <option key={t.id} value={t.id}>{t.name}</option>
                 ))}
               </select>
             </div>
           )}
-          <PreviewCard form={previewForm} />
+          {selectedAdminTemplateId ? (
+            <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+                <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Şablon Önizleme</h2>
+                <span className="text-xs text-slate-400">Kaydet → güncel görünür</span>
+              </div>
+              <iframe
+                key={iframeKey}
+                src={`/admin/themes/${theme.id}/preview?templateId=${selectedAdminTemplateId}`}
+                className="w-full border-0"
+                style={{ height: "calc(100vh - 200px)" }}
+                title="Şablon önizleme"
+              />
+            </div>
+          ) : (
+            <PreviewCard form={form} />
+          )}
         </aside>
       </main>
     </div>

@@ -7,6 +7,8 @@ import { useMemo, useState } from "react";
 import { FONT_MAP } from "@/types/theme";
 import type { ThemeConfig, ThemeSurface } from "@/types/theme";
 
+type SiblingTheme = { id: number; name: string; config: ThemeConfig };
+
 type ThemeEditorMeta = {
   id: number;
   name: string;
@@ -25,6 +27,7 @@ type Props = {
   theme: ThemeEditorMeta;
   baseConfig: ThemeConfig;
   availableTemplates: { id: string; name: string; version: number }[];
+  siblingThemes?: SiblingTheme[];
 };
 
 type FormState = {
@@ -98,11 +101,12 @@ const SPACING_OPTIONS: { value: FormState["surface"]["spacing"]; label: string }
   { value: "spacious", label: "Ferah" },
 ];
 
-export function ThemeEditorClient({ theme, baseConfig, availableTemplates }: Props) {
+export function ThemeEditorClient({ theme, baseConfig, availableTemplates, siblingThemes = [] }: Props) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [previewThemeId, setPreviewThemeId] = useState<number | null>(null);
   const [form, setForm] = useState<FormState>(() => ({
     name: theme.name,
     description: theme.description ?? "",
@@ -146,6 +150,51 @@ export function ThemeEditorClient({ theme, baseConfig, availableTemplates }: Pro
     () => availableTemplates.find((item) => item.id === form.templateId),
     [availableTemplates, form.templateId]
   );
+
+  const previewForm = useMemo((): FormState => {
+    if (previewThemeId === null) return form;
+    const sibling = siblingThemes.find((t) => t.id === previewThemeId);
+    if (!sibling) return form;
+    const c = sibling.config;
+    return {
+      name: sibling.name,
+      description: "",
+      status: "active",
+      isFree: false,
+      isPremium: false,
+      previewImageUrl: "",
+      templateId: "",
+      colors: {
+        bg: c.colors.bg || "#ffffff",
+        fg: c.colors.fg || "#111827",
+        heading: c.colors.heading ?? c.colors.fg ?? "#111827",
+        link: c.colors.link ?? c.colors.accent ?? "#2563eb",
+        accent: c.colors.accent || "#2563eb",
+        button: c.colors.button ?? c.colors.accent ?? "#2563eb",
+        buttonFg: c.colors.buttonFg ?? "#ffffff",
+        card: c.colors.card ?? "",
+        cardFg: c.colors.cardFg ?? "",
+        border: c.colors.border ?? "",
+        muted: c.colors.muted ?? "#64748b",
+        overlay: c.colors.overlay ?? "",
+      },
+      font: c.font ?? "sans",
+      radius: c.radius ?? "md",
+      surface: {
+        borderWidth: c.surface?.borderWidth ?? 1,
+        shadow: c.surface?.shadow ?? "soft",
+        background: c.surface?.background ?? (c.colors.bg.includes("gradient") ? "gradient" : "solid"),
+        gradientFrom: c.surface?.gradientFrom ?? "#3b82f6",
+        gradientTo: c.surface?.gradientTo ?? "#8b5cf6",
+        gradientAngle: c.surface?.gradientAngle ?? 135,
+        cardOpacity: c.surface?.cardOpacity ?? 100,
+        spacing: c.surface?.spacing ?? "comfortable",
+      },
+      layout: c.layout ?? "",
+      style: c.style ?? "",
+      effect: c.effect ?? "",
+    };
+  }, [previewThemeId, form, siblingThemes]);
 
   async function handleSave() {
     setSaving(true);
@@ -323,7 +372,21 @@ export function ThemeEditorClient({ theme, baseConfig, availableTemplates }: Pro
         </section>
 
         <aside className="lg:fixed lg:right-[max(1rem,calc((100vw-80rem)/2+1rem))] lg:top-24 lg:w-[360px]">
-          <PreviewCard form={form} />
+          {siblingThemes.length > 0 && (
+            <div className="mb-3">
+              <select
+                value={previewThemeId ?? ""}
+                onChange={(e) => setPreviewThemeId(e.target.value ? Number(e.target.value) : null)}
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+              >
+                <option value="">— Bu tema (mevcut) —</option>
+                {siblingThemes.map((t) => (
+                  <option key={t.id} value={t.id}>{t.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+          <PreviewCard form={previewForm} />
         </aside>
       </main>
     </div>

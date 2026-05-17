@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { themes } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
@@ -41,6 +41,15 @@ export default async function ThemeEditPage({
 
   const [theme] = await db.select().from(themes).where(eq(themes.id, id));
   if (!theme) notFound();
+
+  const siblingRows = await db
+    .select({ id: themes.id, name: themes.name, themeConfigJson: themes.themeConfigJson })
+    .from(themes)
+    .where(eq(themes.productType, theme.productType))
+    .orderBy(asc(themes.name));
+  const siblingThemes = siblingRows
+    .filter((t) => t.id !== id && t.themeConfigJson != null)
+    .map((t) => ({ id: t.id, name: t.name, config: t.themeConfigJson as ThemeConfig }));
 
   const stored = theme.themeConfigJson as StoredThemeConfig;
   const templateId = stored.templateId;
@@ -142,6 +151,7 @@ export default async function ThemeEditPage({
         name: item.name,
         version: item.version,
       }))}
+      siblingThemes={siblingThemes}
     />
   );
 }

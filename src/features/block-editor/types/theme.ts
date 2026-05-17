@@ -24,6 +24,7 @@ export interface ThemeStyleConfig {
   borderWidth: string;
   shadow: string;
   blur?: string;
+  spacing?: string;
 }
 
 export interface ThemeConfig {

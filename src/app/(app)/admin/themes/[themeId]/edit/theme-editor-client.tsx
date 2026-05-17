@@ -350,7 +350,7 @@ export function ThemeEditorClient({ theme, baseConfig, availableTemplates, admin
               </div>
               <iframe
                 key={iframeKey}
-                src={`/admin/themes/${theme.id}/preview?templateId=${selectedAdminTemplateId}`}
+                src={`/admin/themes/${theme.id}/template-preview?templateId=${selectedAdminTemplateId}`}
                 className="w-full border-0"
                 style={{ height: "calc(100vh - 200px)" }}
                 title="Şablon önizleme"

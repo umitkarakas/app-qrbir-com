@@ -53,9 +53,7 @@ type FormState = {
   font: NonNullable<ThemeConfig["font"]>;
   radius: NonNullable<ThemeConfig["radius"]>;
   surface: Required<ThemeSurface>;
-  layout: string;
-  style: string;
-  effect: string;
+  effect: "" | "glass";
 };
 
 const FONT_OPTIONS: { value: FormState["font"]; label: string }[] = [
@@ -85,6 +83,11 @@ const SHADOW_OPTIONS: { value: FormState["surface"]["shadow"]; label: string }[]
   { value: "medium", label: "Orta" },
   { value: "strong", label: "Belirgin" },
   { value: "glow", label: "Glow" },
+];
+
+const EFFECT_OPTIONS: { value: FormState["effect"]; label: string }[] = [
+  { value: "", label: "Yok" },
+  { value: "glass", label: "Glassmorphism" },
 ];
 
 const BACKGROUND_OPTIONS: { value: FormState["surface"]["background"]; label: string }[] = [
@@ -140,9 +143,7 @@ export function ThemeEditorClient({ theme, baseConfig, availableTemplates, admin
       cardOpacity: baseConfig.surface?.cardOpacity ?? 100,
       spacing: baseConfig.surface?.spacing ?? "comfortable",
     },
-    layout: baseConfig.layout ?? "",
-    style: baseConfig.style ?? "",
-    effect: baseConfig.effect ?? "",
+    effect: (baseConfig.effect ?? "").includes("glass") ? "glass" : "",
   }));
 
   const selectedTemplate = useMemo(
@@ -164,9 +165,7 @@ export function ThemeEditorClient({ theme, baseConfig, availableTemplates, admin
         font: form.font,
         radius: form.radius,
         surface: form.surface,
-        layout: form.layout.trim() || undefined,
-        style: form.style.trim() || undefined,
-        effect: form.effect.trim() || undefined,
+        effect: form.effect || undefined,
         templateId: form.templateId || undefined,
         templateVersion: selectedTemplate?.version ?? theme.templateVersion ?? 1,
       });
@@ -298,7 +297,6 @@ export function ThemeEditorClient({ theme, baseConfig, availableTemplates, admin
             </div>
             <div className="grid grid-cols-1 gap-4 border-t border-slate-100 pt-4 sm:grid-cols-2">
               <SelectField label="Font" value={form.font} options={FONT_OPTIONS} onChange={(value) => setForm({ ...form, font: value as FormState["font"] })} />
-              <TextField label="Font Stili" value={form.style} onChange={(value) => setForm({ ...form, style: value })} placeholder="modern, editorial, luxury..." />
             </div>
           </Panel>
 
@@ -318,8 +316,7 @@ export function ThemeEditorClient({ theme, baseConfig, availableTemplates, admin
               <SelectField label="Gölge" value={form.surface.shadow} options={SHADOW_OPTIONS} onChange={(value) => setForm({ ...form, surface: { ...form.surface, shadow: value as FormState["surface"]["shadow"] } })} />
               <SelectField label="Boşluk Sistemi" value={form.surface.spacing} options={SPACING_OPTIONS} onChange={(value) => setForm({ ...form, surface: { ...form.surface, spacing: value as FormState["surface"]["spacing"] } })} />
               <RangeField label="Kart Opaklığı" value={form.surface.cardOpacity} min={40} max={100} step={5} suffix="%" onChange={(value) => setForm({ ...form, surface: { ...form.surface, cardOpacity: value } })} />
-              <TextField label="Efekt" value={form.effect} onChange={(value) => setForm({ ...form, effect: value })} placeholder="glass, blur, glow..." />
-              <TextField label="Layout" value={form.layout} onChange={(value) => setForm({ ...form, layout: value })} placeholder="compact, editorial..." />
+              <SelectField label="Efekt" value={form.effect} options={EFFECT_OPTIONS} onChange={(value) => setForm({ ...form, effect: value as FormState["effect"] })} />
             </div>
           </Panel>
 
@@ -559,7 +556,7 @@ function PreviewCard({ form }: { form: FormState }) {
                   {form.name || "Tasarım Adı"}
                 </h3>
                 <p className="mt-1 text-xs font-medium uppercase tracking-wide" style={{ color: muted }}>
-                  {form.layout || "premium layout"}
+                  {form.effect === "glass" ? "glassmorphism" : form.surface.background}
                 </p>
               </div>
             </div>

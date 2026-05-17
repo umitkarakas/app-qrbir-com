@@ -27,6 +27,7 @@ export const removeTheme = (element: HTMLElement = document.documentElement): vo
     '--theme-border-width',
     '--theme-shadow',
     '--theme-blur',
+    '--theme-spacing',
   ];
 
   variableNames.forEach(name => {
@@ -53,6 +54,7 @@ export const getThemeVariables = (config: ThemeConfig): Record<string, string> =
     '--theme-border-width': config.style.borderWidth,
     '--theme-shadow': config.style.shadow,
     '--theme-blur': config.style.blur || 'none',
+    '--theme-spacing': config.style.spacing || '0.875rem',
   };
 };
 

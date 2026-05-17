@@ -135,6 +135,7 @@ function normalizeThemeConfig(value: unknown): ThemeConfig {
       borderRadius: radiusValue(radius),
       borderWidth: `${numberValue(surface.borderWidth, 1)}px`,
       shadow: shadowValue(shadow, accent),
+      spacing: spacingValue(stringValue(surface.spacing)),
       ...(stringValue(stored.effect).includes("glass") ? { blur: "16px" } : {}),
     },
   };
@@ -171,6 +172,14 @@ function radiusValue(radius: string): string {
     case "md":
     default:
       return "0.5rem";
+  }
+}
+
+function spacingValue(spacing: string): string {
+  switch (spacing) {
+    case "compact": return "0.5rem";
+    case "spacious": return "1.25rem";
+    default: return "0.875rem";
   }
 }
 

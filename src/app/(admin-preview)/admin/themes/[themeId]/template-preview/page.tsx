@@ -115,5 +115,6 @@ function storedConfigToCssVars(stored: StoredThemeConfig): Record<string, string
     "--theme-border-width": `${(surface.borderWidth as number) ?? 1}px`,
     "--theme-shadow": shadowMap[shadow] ?? shadowMap.soft,
     "--theme-blur": (stored.effect || "").includes("glass") ? "16px" : "none",
+    "--theme-spacing": { compact: "0.5rem", spacious: "1.25rem" }[(surface.spacing as string) ?? ""] ?? "0.875rem",
   };
 }

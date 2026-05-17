@@ -382,6 +382,8 @@ input:-webkit-autofill:focus {
 }
 @utility theme-surface {
   background-color: var(--theme-surface);
+  backdrop-filter: blur(var(--theme-blur, none));
+  -webkit-backdrop-filter: blur(var(--theme-blur, none));
 }
 @utility theme-border {
   border-color: var(--theme-border);
@@ -400,4 +402,7 @@ input:-webkit-autofill:focus {
 }
 @utility theme-shadow {
   box-shadow: var(--theme-shadow);
+}
+@utility theme-spacing {
+  padding: var(--theme-spacing, 0.875rem);
 }

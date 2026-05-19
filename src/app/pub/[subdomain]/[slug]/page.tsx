@@ -20,6 +20,8 @@ import { CampaignLinkRenderer } from "@/components/renderers/campaign-link";
 import { ViewTracker } from "@/components/view-tracker";
 import { BlockContentRenderer } from "@/features/block-editor/components/BlockContentRenderer";
 import { isBlockEditorContent } from "@/features/block-editor/types/content";
+import { getTemplate } from "@/lib/theme-editor/registry";
+import type { StoredThemeConfig } from "@/lib/theme-editor/contract";
 
 // --- Sabitler ---
 
@@ -214,67 +216,93 @@ export default async function PublicPage({
     content = mod?.defaultContent ?? {};
   }
 
-  // Tema fallback (temadan bağımsız çalışabilmeli)
-  const themeConfig: ThemeConfig = (row.themeConfig as ThemeConfig) ?? {
+  // Tema: StoredThemeConfig (bg/fg/accent) — DB'den gelen ham format
+  const storedTheme: StoredThemeConfig = (row.themeConfig as StoredThemeConfig) ?? {
     colors: { bg: "#ffffff", fg: "#111827", accent: "#3b82f6" },
     font: "sans",
     radius: "md",
   };
+  // Geriye dönük uyumluluk için ThemeConfig alias'ı (legacy renderer'lar bu tipi kullanır)
+  const themeConfig: ThemeConfig = storedTheme;
+
+  // Eğer DB temasında templateId varsa kayıtlı ThemeTemplate'i kullan
+  // Bu sayede admin editöründeki önizleme ile public sayfa aynı kodu çalıştırır
+  const registeredTemplate = storedTheme.templateId
+    ? getTemplate(storedTheme.templateId)
+    : undefined;
+
+  const legacyContentTypes = [
+    "restaurant_menu",
+    "bio_link",
+    "google_review",
+    "brand_bio",
+    "event_invitation",
+    "campaign_link",
+  ] as const;
+  type LegacyType = (typeof legacyContentTypes)[number];
 
   return (
     <main style={{ minHeight: "100vh" }}>
       {/* Görüntülenme takibi — fire-and-forget */}
       <ViewTracker projectId={row.id} src={trackSrc} />
 
-      {/* Renderer */}
+      {/* Yol B: Block editor içeriği */}
       {isBlockEditorContent(content) && (
         <BlockContentRenderer content={content} />
       )}
-      {!isBlockEditorContent(content) && row.projectType === "restaurant_menu" && (
+
+      {/* Yol A: Legacy içerik — önce kayıtlı ThemeTemplate.render dene */}
+      {!isBlockEditorContent(content) && registeredTemplate && (
+        <>{registeredTemplate.render({ content, theme: themeConfig, mode: "public" })}</>
+      )}
+
+      {/* Yol A fallback: ThemeTemplate yoksa generic renderer'a düş */}
+      {!isBlockEditorContent(content) && !registeredTemplate && row.projectType === "restaurant_menu" && (
         <RestaurantMenuRenderer
           content={content as Parameters<typeof RestaurantMenuRenderer>[0]["content"]}
           theme={themeConfig}
         />
       )}
-      {!isBlockEditorContent(content) && row.projectType === "bio_link" && (
+      {!isBlockEditorContent(content) && !registeredTemplate && row.projectType === "bio_link" && (
         <BioLinkRenderer
           content={content as Parameters<typeof BioLinkRenderer>[0]["content"]}
           theme={themeConfig}
         />
       )}
-      {!isBlockEditorContent(content) && row.projectType === "google_review" && (
+      {!isBlockEditorContent(content) && !registeredTemplate && row.projectType === "google_review" && (
         <GoogleReviewRenderer
           content={content as Parameters<typeof GoogleReviewRenderer>[0]["content"]}
           theme={themeConfig}
         />
       )}
-      {!isBlockEditorContent(content) && row.projectType === "brand_bio" && (
+      {!isBlockEditorContent(content) && !registeredTemplate && row.projectType === "brand_bio" && (
         <BrandBioRenderer
           content={content as Parameters<typeof BrandBioRenderer>[0]["content"]}
           theme={themeConfig}
         />
       )}
-      {!isBlockEditorContent(content) && row.projectType === "event_invitation" && (
+      {!isBlockEditorContent(content) && !registeredTemplate && row.projectType === "event_invitation" && (
         <EventInvitationRenderer
           content={content as Parameters<typeof EventInvitationRenderer>[0]["content"]}
           theme={themeConfig}
         />
       )}
-      {!isBlockEditorContent(content) && row.projectType === "campaign_link" && (
+      {!isBlockEditorContent(content) && !registeredTemplate && row.projectType === "campaign_link" && (
         <CampaignLinkRenderer
           content={content as Parameters<typeof CampaignLinkRenderer>[0]["content"]}
         />
       )}
+
       {/* Desteklenmeyen tip */}
-      {!["restaurant_menu", "bio_link", "google_review", "brand_bio", "event_invitation", "campaign_link"].includes(
-        row.projectType
-      ) && (
-        <StatusPage
-          icon="🚧"
-          title="Bu sayfa yakında hazır olacak"
-          body="Bu ürün tipi için görüntüleme desteği geliştiriliyor."
-        />
-      )}
+      {!isBlockEditorContent(content) &&
+        !registeredTemplate &&
+        !legacyContentTypes.includes(row.projectType as LegacyType) && (
+          <StatusPage
+            icon="🚧"
+            title="Bu sayfa yakında hazır olacak"
+            body="Bu ürün tipi için görüntüleme desteği geliştiriliyor."
+          />
+        )}
 
       {/* QRbir damgası — ücretsiz projeler için */}
       {row.isFree && <QRbirBadge />}

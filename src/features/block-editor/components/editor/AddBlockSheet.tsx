@@ -3,7 +3,7 @@ import { X, Search, Sparkles, LayoutGrid, UtensilsCrossed, Calendar } from 'luci
 import * as Icons from 'lucide-react';
 import { useEditor } from '../../contexts/EditorContext';
 import { BLOCK_DEFINITIONS } from '../../config/constants';
-import { isBlockTypeRegistered } from '../../config/blockRegistry';
+import { isBlockTypeRegistered, getBlockDefaultContent } from '../../config/blockRegistry';
 import type { BlockType } from '../../types/blocks';
 
 interface AddBlockSheetProps {
@@ -87,7 +87,7 @@ export default function AddBlockSheet({ isOpen, onClose }: AddBlockSheetProps) {
         name: definition.label,
         description: definition.userDescription,
         icon: definition.icon,
-        category: definition.category === 'biolink' ? 'bio_link' : definition.category,
+        category: definition.category,
         is_pro: false,
         allowed_site_types: definition.siteTypes ?? [],
       })),
@@ -125,8 +125,13 @@ export default function AddBlockSheet({ isOpen, onClose }: AddBlockSheetProps) {
 
     const recommendedTypes: Record<string, string[]> = {
       digital_menu: ['profile_card', 'menu_item', 'wifi_card', 'google_review', 'text'],
+      restaurant_menu: ['profile_card', 'menu_item', 'wifi_card', 'google_review', 'text'],
+      google_review: ['profile_card', 'menu_item', 'wifi_card', 'google_review', 'text'],
       digital_invitation: ['countdown', 'location_map', 'rsvp_form', 'text'],
+      event_invitation: ['countdown', 'location_map', 'rsvp_form', 'text'],
       bio_link: ['profile_card', 'link_button', 'social_links', 'contact_form'],
+      brand_bio: ['profile_card', 'link_button', 'social_links', 'skill_bars'],
+      campaign_link: ['profile_card', 'link_button', 'text'],
     };
 
     const siteTypeRecommended = recommendedTypes[site?.site_type || ''] || [];

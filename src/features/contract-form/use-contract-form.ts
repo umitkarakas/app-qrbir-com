@@ -77,6 +77,23 @@ export function useContractForm({ projectId, contract, initialContent }: UseCont
     [contract]
   );
 
+  const moveItem = useCallback(
+    (entryId: string, fromIdx: number, toIdx: number) => {
+      setState((prev) => ({
+        ...prev,
+        entries: prev.entries.map((entry) => {
+          if (entry.entryId !== entryId) return entry;
+          const items = [...entry.items];
+          const [removed] = items.splice(fromIdx, 1);
+          items.splice(toIdx, 0, removed);
+          return { ...entry, items };
+        }),
+      }));
+      setIsDirty(true);
+    },
+    []
+  );
+
   const save = useCallback(async () => {
     setIsSaving(true);
     setError(null);
@@ -101,5 +118,5 @@ export function useContractForm({ projectId, contract, initialContent }: UseCont
     }
   }, [state, projectId]);
 
-  return { state, updateValue, addItem, removeItem, isDirty, isSaving, error, save };
+  return { state, updateValue, addItem, removeItem, moveItem, isDirty, isSaving, error, save };
 }

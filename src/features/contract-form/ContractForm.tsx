@@ -23,7 +23,7 @@ type Props = {
 };
 
 export function ContractForm({ project, contract, initialContent }: Props) {
-  const { state, updateValue, addItem, removeItem, isDirty, isSaving, error, save } = useContractForm({
+  const { state, updateValue, addItem, removeItem, moveItem, isDirty, isSaving, error, save } = useContractForm({
     projectId: project.id,
     contract,
     initialContent,
@@ -161,11 +161,17 @@ export function ContractForm({ project, contract, initialContent }: Props) {
               key={entry.entryId}
               contract={contractEntry}
               entry={entry}
+              constraints={{
+                allowBlockReorder: contract.constraints?.allowBlockReorder ?? false,
+                allowBlockAddRemove: contract.constraints?.allowBlockAddRemove ?? false,
+              }}
               onUpdate={(itemIdx, fieldKey, value) =>
                 updateValue(entry.entryId, itemIdx, fieldKey, value)
               }
               onAdd={() => addItem(entry.entryId)}
               onRemove={(itemIdx) => removeItem(entry.entryId, itemIdx)}
+              onMoveUp={(itemIdx) => moveItem(entry.entryId, itemIdx, itemIdx - 1)}
+              onMoveDown={(itemIdx) => moveItem(entry.entryId, itemIdx, itemIdx + 1)}
             />
           );
         })}

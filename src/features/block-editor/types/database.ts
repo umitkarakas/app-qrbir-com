@@ -42,7 +42,7 @@ export interface Database {
           slug: string;
           title: string;
           description: string | null;
-          site_type: 'digital_menu' | 'digital_invitation' | 'bio_link';
+          site_type: SiteType;
           theme: Json;
           theme_id: string | null;
           settings: Json;
@@ -59,7 +59,7 @@ export interface Database {
           slug: string;
           title: string;
           description?: string | null;
-          site_type: 'digital_menu' | 'digital_invitation' | 'bio_link';
+          site_type: SiteType;
           theme?: Json;
           theme_id?: string | null;
           settings?: Json;
@@ -76,7 +76,7 @@ export interface Database {
           slug?: string;
           title?: string;
           description?: string | null;
-          site_type?: 'digital_menu' | 'digital_invitation' | 'bio_link';
+          site_type?: SiteType;
           theme?: Json;
           theme_id?: string | null;
           settings?: Json;
@@ -263,7 +263,7 @@ export interface Database {
           name: string;
           slug: string | null;
           description: string | null;
-          site_type: 'digital_menu' | 'digital_invitation' | 'bio_link';
+          site_type: SiteType;
           thumbnail_url: string | null;
           theme: Json;
           theme_id: string | null;
@@ -283,7 +283,7 @@ export interface Database {
           name: string;
           slug?: string | null;
           description?: string | null;
-          site_type: 'digital_menu' | 'digital_invitation' | 'bio_link';
+          site_type: SiteType;
           thumbnail_url?: string | null;
           theme: Json;
           theme_id?: string | null;
@@ -303,7 +303,7 @@ export interface Database {
           name?: string;
           slug?: string | null;
           description?: string | null;
-          site_type?: 'digital_menu' | 'digital_invitation' | 'bio_link';
+          site_type?: SiteType;
           thumbnail_url?: string | null;
           theme?: Json;
           theme_id?: string | null;
@@ -388,5 +388,28 @@ export type FormSubmission = Database['public']['Tables']['form_submissions']['R
 export type Template = Database['public']['Tables']['templates']['Row'];
 export type Theme = Database['public']['Tables']['themes']['Row'];
 
-export type SiteType = 'digital_menu' | 'digital_invitation' | 'bio_link';
+/**
+ * SiteType — Blok filtreleme ve içerik serileştirmede kullanılan tür.
+ *
+ * Legacy değerler (Supabase dönemi, saved content'ta mevcut):
+ *   - 'digital_menu'       → restaurant_menu + google_review projeleri
+ *   - 'digital_invitation' → event_invitation projeleri
+ *   - 'bio_link'           → bio_link + brand_bio + campaign_link projeleri
+ *
+ * Yeni projectType değerleri (Drizzle, block izinleri için granüler kontrol):
+ *   - 'brand_bio' | 'campaign_link' → bio_link blok setini görür
+ *
+ * Dönüşüm için: mapProjectTypeToSiteType() (content.ts)
+ * Kaynak doğruluk: src/db/schema/projects.ts → projectTypeEnum
+ */
+export type SiteType =
+  | 'digital_menu'
+  | 'digital_invitation'
+  | 'bio_link'
+  | 'brand_bio'
+  | 'campaign_link'
+  | 'restaurant_menu'
+  | 'google_review'
+  | 'event_invitation';
+
 export type ThemeStyle = 'flat' | 'neo-brutalism' | 'glassmorphism';

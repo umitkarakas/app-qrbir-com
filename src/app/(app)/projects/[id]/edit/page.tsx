@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { projects, projectContents, themes, templates } from "@/db/schema";
-import { and, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
@@ -11,13 +11,13 @@ import { BlockEditorClient } from "./block-editor-client";
 import {
   createBlocksFromContent,
   createEditorSite,
-  createThemeList,
   isBlockEditorContent,
   type BlockEditorContent,
   type EditorProject,
 } from "@/features/block-editor/types/content";
 import { getTemplateContractFromMetadata } from "@/features/block-editor/lib/template-contract";
 import { ContractForm } from "@/features/contract-form/ContractForm";
+import { mapDesignTheme } from "@/features/block-editor/lib/normalize-theme";
 
 export default async function EditPage({
   params,
@@ -120,6 +120,14 @@ export default async function EditPage({
     // contract eksik veya parse edilemedi → legacy block-editor'a düş
   }
 
+  // Proje tipine göre aktif temaları DB'den çek ve normalize et
+  const themeRows = await db
+    .select()
+    .from(themes)
+    .where(and(eq(themes.productType, row.projectType), eq(themes.status, "active")))
+    .orderBy(asc(themes.name));
+  const themeList = themeRows.map((t) => mapDesignTheme(t));
+
   // Legacy block editor path
   const project: EditorProject = {
     id: row.id,
@@ -138,7 +146,7 @@ export default async function EditPage({
       project={project}
       site={createEditorSite(project, initialContent)}
       blocks={createBlocksFromContent(project, initialContent)}
-      themes={createThemeList()}
+      themes={themeList}
     />
   );
 }

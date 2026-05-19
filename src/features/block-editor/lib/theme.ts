@@ -1,3 +1,9 @@
+/**
+ * theme.ts — CSS variable üretici ve uygulayıcı
+ *
+ * Bu dosya RUNTIME ThemeConfig ile çalışır (primary/background/text formatı).
+ * DB formatından (bg/fg/accent) dönüşüm için normalize-theme.ts kullanın.
+ */
 import { ThemeConfig } from '../types/theme';
 
 export const applyTheme = (config: ThemeConfig, element: HTMLElement = document.documentElement): void => {

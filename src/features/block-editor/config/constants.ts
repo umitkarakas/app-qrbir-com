@@ -22,14 +22,23 @@ export const SITE_TYPES: { value: SiteType; label: string; description: string; 
   },
 ];
 
+/**
+ * BLOCK_DEFINITIONS — Blok görüntü meta verilerinin TEK KAYNAĞI.
+ *
+ * defaultContent BURAYA yazılmaz — blockRegistry.ts'ten gelir.
+ * Yeni blok eklemek için:
+ *   1. components/blocks/.../YeniBlok.tsx — bileşen
+ *   2. types/blocks.ts — ContentType arayüzü + BlockType union'a ekle
+ *   3. blockRegistry.ts — component + defaultContent
+ *   4. Burada — label, icon, category, descriptions  (DB seed isteğe bağlı)
+ */
 export const BLOCK_DEFINITIONS: Record<
   BlockType,
   {
     label: string;
     icon: string;
-    category: 'common' | 'menu' | 'invitation' | 'biolink';
+    category: 'common' | 'menu' | 'invitation' | 'bio_link';
     siteTypes?: SiteType[];
-    defaultContent: Record<string, unknown>;
     adminDescription: string;
     userDescription: string;
   }
@@ -38,7 +47,6 @@ export const BLOCK_DEFINITIONS: Record<
     label: 'Profil Kartı',
     icon: 'UserCircle',
     category: 'common',
-    defaultContent: { name: '', title: '', bio: '', avatarUrl: '' },
     adminDescription: 'Fotoğraf, isim ve kısa biyografi ile sayfanın kimliğini oluşturur. Profil fotoğrafı, başlık (isim/unvan) ve açıklama alanı içerir. Sayfanın en başında yer alır. Silinemez, kopyalanamaz ve ikinci kez eklenemez. Konumu sabittir.',
     userDescription: 'Sayfanın en üstünde görünen profil alanıdır. Fotoğrafınız, isminiz ve kısa bir açıklama ile ziyaretçilere kendinizi tanıtmanızı sağlar.',
   },
@@ -46,7 +54,6 @@ export const BLOCK_DEFINITIONS: Record<
     label: 'Sosyal Medya',
     icon: 'Share2',
     category: 'common',
-    defaultContent: { links: [] },
     adminDescription: 'Sosyal medya ve iletişim bağlantılarının ikonlu şekilde eklenmesini sağlar. Her bağlantı türü için uygun doğrulama kontrolleri bulunur (telefon numarası, e-posta formatı vb.). Sıralama ve görünürlük ayarları desteklenir.',
     userDescription: 'Sosyal medya hesaplarınıza tek dokunuşla ulaşılmasını sağlar. Instagram, WhatsApp, telefon ve e-posta gibi bağlantıları ikonlarla gösterebilirsiniz.',
   },
@@ -54,7 +61,6 @@ export const BLOCK_DEFINITIONS: Record<
     label: 'Harita',
     icon: 'MapPin',
     category: 'common',
-    defaultContent: { address: '', lat: 0, lng: 0 },
     adminDescription: 'Etkileşimli harita üzerinde konum gösterimi sağlar. Adres, yakınlaştırma ve yol tarifi özelliklerini destekler.',
     userDescription: 'İşletmenizin veya etkinliğinizin konumunu harita üzerinde gösterir.',
   },
@@ -62,7 +68,6 @@ export const BLOCK_DEFINITIONS: Record<
     label: 'Video',
     icon: 'Video',
     category: 'common',
-    defaultContent: { url: '', title: '' },
     adminDescription: 'YouTube, Vimeo veya doğrudan bağlantı ile video içeriği eklenmesini sağlar. Önizleme görseli ve oynatma kontrollerini destekler.',
     userDescription: 'Tanıtım veya bilgilendirme videolarınızı sayfanızda oynatabilirsiniz.',
   },
@@ -70,7 +75,6 @@ export const BLOCK_DEFINITIONS: Record<
     label: 'Metin Bloğu',
     icon: 'Type',
     category: 'common',
-    defaultContent: { text: '', alignment: 'left' },
     adminDescription: 'Başlık, paragraf ve vurgulu metinlerle açıklayıcı içerik eklenmesini sağlar. Kalın, italik, bağlantı ve satır aralığı gibi temel metin biçimlendirme seçeneklerini destekler.',
     userDescription: 'Açıklama, duyuru veya bilgi vermek için metin eklemenizi sağlar. Başlık ve paragraf yapısıyla içeriğinizi düzenli şekilde sunabilirsiniz.',
   },
@@ -78,7 +82,6 @@ export const BLOCK_DEFINITIONS: Record<
     label: 'Foto Galeri',
     icon: 'Images',
     category: 'common',
-    defaultContent: { images: [], layout: 'grid' },
     adminDescription: 'Birden fazla görselin galeri formatında sunulmasını sağlar. Sıralama, dokunarak büyütme ve kaydırma etkileşimlerini destekler.',
     userDescription: 'Fotoğraflarınızı galeri halinde sergileyerek mekânınızı, ürünlerinizi veya çalışmalarınızı görsel olarak anlatabilirsiniz.',
   },
@@ -86,7 +89,6 @@ export const BLOCK_DEFINITIONS: Record<
     label: 'Link Butonu',
     icon: 'Link',
     category: 'common',
-    defaultContent: { text: 'Tıklayın', url: '', style: 'filled' },
     adminDescription: 'Özel bir bağlantıya yönlendiren çağrı-aksiyon (CTA) butonu ekler. Buton metni, URL ve stil seçeneklerini içerir.',
     userDescription: 'Ziyaretçileri belirli bir sayfaya yönlendirmek için dikkat çekici bir buton eklemenizi sağlar.',
   },
@@ -94,7 +96,6 @@ export const BLOCK_DEFINITIONS: Record<
     label: 'Ayırıcı',
     icon: 'Minus',
     category: 'common',
-    defaultContent: { style: 'solid', color: '#E5E7EB' },
     adminDescription: 'Sayfa bölümleri arasında görsel ayrım oluşturur. Tasarım öğesidir. Farklı stil ve boşluk seçenekleriyle içeriğin okunabilirliğini artırır.',
     userDescription: 'İçerik bölümlerini ayırarak sayfanın daha düzenli ve okunabilir görünmesini sağlar.',
   },
@@ -102,7 +103,6 @@ export const BLOCK_DEFINITIONS: Record<
     label: 'vCard',
     icon: 'Contact',
     category: 'common',
-    defaultContent: { fullName: '', email: '', phone: '', company: '', title: '' },
     adminDescription: 'İndirilebilir dijital kartvizit (vCard) oluşturur. İsim, telefon, e-posta ve şirket bilgilerini içerir. QR kod ve indirme butonu ile birlikte sunulur.',
     userDescription: 'Dijital kartvizitinizi ziyaretçilerin tek dokunuşla telefonlarına kaydetmesini sağlar.',
   },
@@ -110,7 +110,6 @@ export const BLOCK_DEFINITIONS: Record<
     label: 'PDF Görüntüleyici',
     icon: 'FileText',
     category: 'common',
-    defaultContent: { url: '', title: '' },
     adminDescription: 'PDF belgelerinin sayfa içerisinde görüntülenmesini sağlar. Menü, katalog, broşür veya döküman paylaşımı için kullanılır.',
     userDescription: 'PDF formatındaki menü, katalog veya belgelerinizi sayfanızda kolayca paylaşabilirsiniz.',
   },
@@ -118,7 +117,6 @@ export const BLOCK_DEFINITIONS: Record<
     label: 'SSS',
     icon: 'HelpCircle',
     category: 'common',
-    defaultContent: { items: [] },
     adminDescription: 'Soru–cevap içeriklerini açılır–kapanır (akordeon) formatta sunar. Birden fazla soru eklenmesini destekler.',
     userDescription: 'Sık sorulan soruları düzenli şekilde göstererek ziyaretçilerin hızlıca bilgi almasını sağlar.',
   },
@@ -127,7 +125,6 @@ export const BLOCK_DEFINITIONS: Record<
     icon: 'UtensilsCrossed',
     category: 'menu',
     siteTypes: ['digital_menu'],
-    defaultContent: { name: '', description: '', price: 0, currency: '₺', tags: [], isAvailable: true, category: '' },
     adminDescription: 'Fiyat ve açıklama içeren menü öğesi ekler. Kategori seçimi ile menü öğelerini gruplandırabilirsiniz. Restoran ve kafe menüleri için optimize edilmiştir.',
     userDescription: 'Menünüzdeki ürünleri fiyat ve açıklamalarıyla birlikte düzenli şekilde sergilemenizi sağlar.',
   },
@@ -136,7 +133,6 @@ export const BLOCK_DEFINITIONS: Record<
     icon: 'Wifi',
     category: 'menu',
     siteTypes: ['digital_menu'],
-    defaultContent: { networkName: '', password: '', securityType: 'WPA2' },
     adminDescription: 'WiFi ağ bilgilerini QR kod ve kopyalanabilir metin formatında sunar. Ağ adı ve şifre ile otomatik bağlantıyı destekler.',
     userDescription: 'Misafirlerinizin WiFi ağına hızlı ve kolay şekilde bağlanmasını sağlar.',
   },
@@ -145,7 +141,6 @@ export const BLOCK_DEFINITIONS: Record<
     icon: 'Star',
     category: 'menu',
     siteTypes: ['digital_menu'],
-    defaultContent: { placeId: '', buttonText: 'Yorum Yap' },
     adminDescription: 'Google İşletme panelinden alınan özel yorum bağlantısı kullanılarak çalışır. Bağlantıya tıklandığında kullanıcıyı Google İşletme profiline yönlendirir ve yorum yazma penceresini otomatik olarak açar.',
     userDescription: 'Müşterilerinizi Google\'da yorum yapmaya yönlendirir. Tek dokunuşla Google profilinize gider ve yorum sayfası açılır.',
   },
@@ -154,15 +149,6 @@ export const BLOCK_DEFINITIONS: Record<
     icon: 'Clock',
     category: 'invitation',
     siteTypes: ['digital_invitation'],
-    defaultContent: {
-      targetDate: '',
-      title: '',
-      showDays: true,
-      showHours: true,
-      showMinutes: true,
-      showSeconds: true,
-      completedMessage: 'Etkinlik başladı!',
-    },
     adminDescription: 'Belirlenen tarih ve saate kadar kalan süreyi dinamik olarak gösterir. Etkinlik, lansman veya kampanya senaryolarını destekler.',
     userDescription: 'Etkinlik veya kampanya için geri sayım göstererek dikkat oluşturur.',
   },
@@ -171,40 +157,22 @@ export const BLOCK_DEFINITIONS: Record<
     icon: 'Calendar',
     category: 'invitation',
     siteTypes: ['digital_invitation'],
-    defaultContent: {
-      eventName: '',
-      eventDate: '',
-      fields: [],
-      maxGuests: 1,
-      confirmationMessage: 'Yanıtınız için teşekkürler!',
-    },
     adminDescription: 'Etkinlik katılım onaylarını toplamak için kullanılan form bloğudur. Özel alanlar ve yanıt takibi desteklenir.',
     userDescription: 'Ziyaretçilerin etkinliğe katılıp katılmayacağını kolayca bildirmesini sağlar.',
   },
   skill_bars: {
     label: 'Yetenek Çubukları',
     icon: 'BarChart',
-    category: 'biolink',
-    siteTypes: ['bio_link'],
-    defaultContent: { skills: [] },
+    category: 'bio_link',
+    siteTypes: ['bio_link', 'brand_bio'],
     adminDescription: 'Beceri ve deneyimleri yüzde veya seviye bazlı görsel çubuklarla gösterir.',
     userDescription: 'Yetkinliklerinizi ve deneyim seviyelerinizi görsel olarak sergilemenizi sağlar.',
   },
   contact_form: {
     label: 'İletişim Formu',
     icon: 'Mail',
-    category: 'biolink',
-    siteTypes: ['bio_link'],
-    defaultContent: {
-      title: 'İletişime Geçin',
-      fields: [
-        { name: 'name', type: 'text', label: 'Ad', required: true },
-        { name: 'email', type: 'email', label: 'E-posta', required: true },
-        { name: 'message', type: 'textarea', label: 'Mesaj', required: true },
-      ],
-      submitText: 'Mesaj Gönder',
-      successMessage: 'Mesajınız başarıyla gönderildi!',
-    },
+    category: 'bio_link',
+    siteTypes: ['bio_link', 'brand_bio', 'campaign_link'],
     adminDescription: 'Kullanıcılardan mesaj toplamak için özelleştirilebilir form bloğudur. Ad, e-posta, mesaj ve isteğe bağlı özel alanlar içerir.',
     userDescription: 'Ziyaretçilerin sizinle doğrudan iletişime geçmesini sağlar.',
   },
@@ -213,16 +181,14 @@ export const BLOCK_DEFINITIONS: Record<
     icon: 'MapPin',
     category: 'invitation',
     siteTypes: ['digital_invitation', 'digital_menu'],
-    defaultContent: { venueName: '', address: '', showDirectionsButton: true },
     adminDescription: 'Etkinlik veya işletme konumunu harita üzerinde gösterir. Mekan adı, adres ve yol tarifi butonu içerir.',
     userDescription: 'Etkinliğinizin veya işletmenizin konumunu harita ile gösterir ve yol tarifi sağlar.',
   },
   social_links: {
     label: 'Sosyal Medya V2',
     icon: 'Share2',
-    category: 'biolink',
-    siteTypes: ['bio_link', 'digital_invitation', 'digital_menu'],
-    defaultContent: { links: [], style: 'icons' },
+    category: 'bio_link',
+    siteTypes: ['bio_link', 'brand_bio', 'campaign_link', 'digital_invitation', 'digital_menu'],
     adminDescription: 'Sosyal medya bağlantılarını ikon veya buton formatında sunar. Birden fazla platform desteği sağlar.',
     userDescription: 'Sosyal medya hesaplarınıza şık bağlantılar ekleyin.',
   },

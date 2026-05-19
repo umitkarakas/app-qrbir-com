@@ -2,23 +2,39 @@
 
 import BlockRenderer from "./blocks/BlockRenderer";
 import type { BlockEditorContent } from "../types/content";
+import type { ThemeConfig } from "../types/theme";
+import { getThemeVariables } from "../lib/theme";
 
 type Props = {
   content: BlockEditorContent;
 };
 
 export function BlockContentRenderer({ content }: Props) {
-  const background =
-    typeof content.site.theme === "object" &&
-    content.site.theme &&
-    "colors" in content.site.theme
-      ? ((content.site.theme as { colors?: { background?: string } }).colors?.background ?? "#f8fafc")
-      : "#f8fafc";
+  // Kaydedilen tema runtime ThemeConfig formatındadır (primary/background/text).
+  // getThemeVariables() ile tüm CSS değişkenlerini üretip container'a enjekte ediyoruz.
+  const themeConfig =
+    typeof content.site.theme === "object" && content.site.theme
+      ? (content.site.theme as ThemeConfig)
+      : null;
+
+  const cssVars = themeConfig ? getThemeVariables(themeConfig) : {};
+
+  const background = themeConfig?.colors.background ?? "#f8fafc";
+  const textColor = themeConfig?.colors.text ?? "#111827";
+  const fontFamily = themeConfig?.fonts.body ?? "system-ui, sans-serif";
 
   return (
-    <div className="min-h-screen py-6 px-4" style={{ background }}>
-      <div className="mx-auto w-full max-w-md rounded-2xl bg-white shadow-xl overflow-hidden">
-        <div className="p-4 sm:p-6 space-y-4">
+    <div
+      className="min-h-screen"
+      style={{
+        ...cssVars,
+        background,
+        color: textColor,
+        fontFamily,
+      } as React.CSSProperties}
+    >
+      <div className="py-6 px-4">
+        <div className="mx-auto w-full max-w-md space-y-4">
           {content.blocks.map((block) => (
             <BlockRenderer key={block.id} block={block} siteId={block.site_id} />
           ))}

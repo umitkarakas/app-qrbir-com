@@ -103,7 +103,7 @@ export const BLOCK_REGISTRY: Record<BlockType, BlockRegistryEntry> = {
   },
   menu_item: {
     component: MenuItem as BlockComponent<MenuItemContent>,
-    defaultContent: { name: '', description: '', price: 0, currency: '₺', isAvailable: true, category: '' },
+    defaultContent: { name: '', description: '', price: 0, currency: '₺', imageUrl: '', isAvailable: true, category: '' },
   },
   wifi_card: {
     component: WifiCard as BlockComponent<WifiCardContent>,

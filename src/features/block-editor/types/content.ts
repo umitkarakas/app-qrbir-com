@@ -36,12 +36,28 @@ export function isBlockEditorContent(input: unknown): input is BlockEditorConten
   return value.editor === "qr1-blocks" && Array.isArray(value.blocks);
 }
 
+/**
+ * mapProjectTypeToSiteType — DB projectType → block-editor SiteType
+ *
+ * Blok izin filtrelemesinde ve legacy saved content serialization'ında kullanılır.
+ * Yeni projectType değerleri için granüler SiteType döner (brand_bio, campaign_link gibi).
+ * Legacy 'digital_menu' ve 'digital_invitation' değerleri backward-compat için korunur.
+ */
 export function mapProjectTypeToSiteType(projectType: string): SiteType {
-  if (projectType === "restaurant_menu" || projectType === "google_review") {
-    return "digital_menu";
+  switch (projectType) {
+    case "restaurant_menu":
+    case "google_review":
+      return "digital_menu";
+    case "event_invitation":
+      return "digital_invitation";
+    case "brand_bio":
+      return "brand_bio";
+    case "campaign_link":
+      return "campaign_link";
+    case "bio_link":
+    default:
+      return "bio_link";
   }
-  if (projectType === "event_invitation") return "digital_invitation";
-  return "bio_link";
 }
 
 export function createEditorSite(project: EditorProject, content: unknown): Site {

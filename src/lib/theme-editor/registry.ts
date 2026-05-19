@@ -1,3 +1,14 @@
+/**
+ * registry.ts — Şablon kayıt merkezi (TEK NOKTA)
+ *
+ * Yeni şablon eklemek için:
+ *   1. src/themes/{tip}/templates/YeniSablon.tsx — render fonksiyonu
+ *   2. src/themes/{tip}/index.ts — export listesine ekle
+ *   3. Burada: import + ALL_TEMPLATES'e ekle
+ *
+ * Public render otomatik olarak getTemplate(id)?.render kullanır.
+ * Admin editör önizlemesi de aynı kodu çalıştırır.
+ */
 import type { ThemeTemplate, ProjectType } from "./contract";
 import { bioLinkTemplates } from "@/themes/bio-link";
 import { restaurantMenuTemplates } from "@/themes/restaurant-menu";

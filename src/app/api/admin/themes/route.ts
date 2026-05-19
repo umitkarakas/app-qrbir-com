@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
 const CreateSchema = z.object({
   name: z.string().min(1).max(100),
   productType: z.enum(VALID_PRODUCT_TYPES),
-  templateId: z.string().min(1),
+  templateId: z.string().min(1).nullable().optional(),
   isFree: z.boolean().default(true),
   isPremium: z.boolean().default(false),
 });
@@ -75,12 +75,6 @@ export async function POST(request: NextRequest) {
 
   const { name, productType, templateId, isFree, isPremium } = parsed.data;
 
-  // Template registry'de var mı?
-  const template = listTemplates(productType).find((t) => t.id === templateId);
-  if (!template) {
-    return NextResponse.json({ error: "Template bulunamadı" }, { status: 400 });
-  }
-
   // Slug üret
   const slug = name
     .toLowerCase()
@@ -88,11 +82,11 @@ export async function POST(request: NextRequest) {
     .replace(/^-|-$/g, "")
     .substring(0, 60);
 
-  const initialConfig = {
-    ...template.defaultConfig,
-    templateId: template.id,
-    templateVersion: template.version,
-  };
+  // Template varsa config'e dahil et, yoksa boş başlat
+  const template = templateId ? listTemplates(productType).find((t) => t.id === templateId) : null;
+  const initialConfig = template
+    ? { ...template.defaultConfig, templateId: template.id, templateVersion: template.version }
+    : { colors: { bg: "#ffffff", fg: "#111827", accent: "#2563eb" }, radius: "md", ...(templateId ? { templateId } : {}) };
 
   const [created] = await db
     .insert(themes)

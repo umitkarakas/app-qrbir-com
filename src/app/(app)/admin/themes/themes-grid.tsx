@@ -61,12 +61,24 @@ export function ThemesGrid({ themes }: Props) {
   }
 
   async function deleteTheme(theme: ThemeCard) {
-    if (!window.confirm(`"${theme.name}" tasarımını arşivlemek istiyor musunuz?`)) return;
+    if (theme.status === "archived") {
+      if (!window.confirm(`Bu tasarım kalıcı olarak silinecek. Geri alınamaz. Devam edilsin mi?`)) return;
+      setBusyId(theme.id);
+      try {
+        const res = await fetch(`/api/admin/themes/${theme.id}?permanent=true`, { method: "DELETE" });
+        if (!res.ok) throw new Error("Tasarım silinemedi");
+        router.refresh();
+      } finally {
+        setBusyId(null);
+      }
+      return;
+    }
 
+    if (!window.confirm(`"${theme.name}" tasarımını arşivlemek istiyor musunuz?`)) return;
     setBusyId(theme.id);
     try {
       const res = await fetch(`/api/admin/themes/${theme.id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Tasarım silinemedi");
+      if (!res.ok) throw new Error("Tasarım arşivlenemedi");
       router.refresh();
     } finally {
       setBusyId(null);
@@ -118,9 +130,9 @@ export function ThemesGrid({ themes }: Props) {
                 onClick={() => duplicateTheme(theme)}
               />
               <IconButton
-                label="Sil"
+                label={theme.status === "archived" ? "Kalıcı Sil" : "Sil"}
                 icon={<Trash2 className="h-4 w-4" />}
-                disabled={busyId === theme.id || theme.status === "archived"}
+                disabled={busyId === theme.id}
                 tone="danger"
                 onClick={() => deleteTheme(theme)}
               />

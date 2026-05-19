@@ -29,14 +29,14 @@ export default function NewThemePage() {
   const templates = productType ? listTemplates(productType) : [];
 
   async function handleCreate() {
-    if (!productType || !templateId || !name.trim()) return;
+    if (!productType || !name.trim()) return;
     setLoading(true);
     setError(null);
     try {
       const res = await fetch("/api/admin/themes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), productType, templateId, isFree, isPremium }),
+        body: JSON.stringify({ name: name.trim(), productType, templateId: templateId ?? null, isFree, isPremium }),
       });
       if (!res.ok) {
         const data = await res.json();
@@ -69,65 +69,61 @@ export default function NewThemePage() {
             1. Ürün Tipi
           </h2>
           <div className="grid grid-cols-2 gap-3">
-            {PRODUCT_TYPES.map((pt) => {
-              const available = listTemplates(pt.value).length > 0;
-              return (
-                <button
-                  key={pt.value}
-                  onClick={() => {
-                    if (!available) return;
-                    setProductType(pt.value);
-                    setTemplateId(null);
-                    setStep(2);
-                  }}
-                  disabled={!available}
-                  className={`text-left p-4 rounded-xl border-2 transition-all ${
-                    productType === pt.value
-                      ? "border-violet-500 bg-violet-50"
-                      : available
-                      ? "border-gray-200 bg-white hover:border-violet-300 hover:bg-violet-50/50 cursor-pointer"
-                      : "border-gray-100 bg-gray-50 opacity-50 cursor-not-allowed"
-                  }`}
-                >
-                  <div className="font-semibold text-gray-900 text-sm">{pt.label}</div>
-                  <div className="text-xs text-gray-500 mt-1">{pt.description}</div>
-                  {!available && (
-                    <div className="text-xs text-gray-400 mt-1">Yakında</div>
-                  )}
-                </button>
-              );
-            })}
+            {PRODUCT_TYPES.map((pt) => (
+              <button
+                key={pt.value}
+                onClick={() => {
+                  setProductType(pt.value);
+                  setTemplateId(null);
+                  setStep(2);
+                }}
+                className={`text-left p-4 rounded-xl border-2 transition-all cursor-pointer ${
+                  productType === pt.value
+                    ? "border-violet-500 bg-violet-50"
+                    : "border-gray-200 bg-white hover:border-violet-300 hover:bg-violet-50/50"
+                }`}
+              >
+                <div className="font-semibold text-gray-900 text-sm">{pt.label}</div>
+                <div className="text-xs text-gray-500 mt-1">{pt.description}</div>
+              </button>
+            ))}
           </div>
         </div>
 
         {/* Adım 2: Template seç + isim */}
-        {step === 2 && productType && templates.length > 0 && (
+        {step === 2 && productType && (
           <div className="space-y-6">
             <div>
               <h2 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
                 2. Tasarım Şablonu
               </h2>
-              <div className="grid grid-cols-1 gap-3">
-                {templates.map((t) => (
-                  <button
-                    key={t.id}
-                    onClick={() => setTemplateId(t.id)}
-                    className={`text-left p-4 rounded-xl border-2 transition-all ${
-                      templateId === t.id
-                        ? "border-violet-500 bg-violet-50"
-                        : "border-gray-200 bg-white hover:border-violet-300 cursor-pointer"
-                    }`}
-                  >
-                    <div className="font-semibold text-gray-900 text-sm">{t.name}</div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {t.capabilities.join(" · ")}
-                    </div>
-                  </button>
-                ))}
-              </div>
+              {templates.length > 0 ? (
+                <div className="grid grid-cols-1 gap-3">
+                  {templates.map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => setTemplateId(t.id)}
+                      className={`text-left p-4 rounded-xl border-2 transition-all ${
+                        templateId === t.id
+                          ? "border-violet-500 bg-violet-50"
+                          : "border-gray-200 bg-white hover:border-violet-300 cursor-pointer"
+                      }`}
+                    >
+                      <div className="font-semibold text-gray-900 text-sm">{t.name}</div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {t.capabilities.join(" · ")}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+                  Bu ürün tipi için henüz şablon yok. Tasarım yine de oluşturulabilir.
+                </div>
+              )}
             </div>
 
-            {templateId && (
+            {(templateId || templates.length === 0) && (
               <div className="space-y-4">
                 <div>
                   <h2 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">

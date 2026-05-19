@@ -124,9 +124,11 @@ export async function POST(
   return NextResponse.json(created, { status: 201 });
 }
 
-// DELETE /api/admin/themes/[themeId] — soft delete (archived)
+// DELETE /api/admin/themes/[themeId]
+//   ?permanent=true  → kalıcı sil (hard delete)
+//   (parametre yok)  → arşivle (soft delete)
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ themeId: string }> },
 ) {
   const session = await requireAdmin();
@@ -135,6 +137,14 @@ export async function DELETE(
   const { themeId } = await params;
   const id = parseInt(themeId, 10);
   if (isNaN(id)) return NextResponse.json({ error: "Geçersiz ID" }, { status: 400 });
+
+  const permanent = request.nextUrl.searchParams.get("permanent") === "true";
+
+  if (permanent) {
+    const deleted = await db.delete(themes).where(eq(themes.id, id)).returning();
+    if (!deleted.length) return NextResponse.json({ error: "Tema bulunamadı" }, { status: 404 });
+    return NextResponse.json({ ok: true });
+  }
 
   const [updated] = await db
     .update(themes)
